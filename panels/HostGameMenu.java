@@ -54,7 +54,7 @@ public class HostGameMenu extends JPanel implements ActionListener, ListSelectio
             }
         });
 
-        clientFinder = new ClientFinder("adkgjdskjfkdsjhdfjlsam");
+        clientFinder = new ClientFinder(p.getName());
 
         clientList = new JList<>(clientFinder.clientList());
         add(clientList);
@@ -96,6 +96,12 @@ public class HostGameMenu extends JPanel implements ActionListener, ListSelectio
             startGameButton.setEnabled(false);
         } else {
             startGameButton.setEnabled(true);
+        }
+    }
+
+    public void setName(String name) {
+        if(clientFinder != null) {
+            clientFinder.updateName(name);
         }
     }
 }

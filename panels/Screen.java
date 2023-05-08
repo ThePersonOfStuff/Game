@@ -12,6 +12,7 @@ public class Screen extends JFrame implements Runnable{
     private MainMenu mainMenu;
     private JoinGameMenu joinGameMenu;
     private HostGameMenu hostGameMenu;
+    private String username;
 
     public Screen() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -96,7 +97,16 @@ public class Screen extends JFrame implements Runnable{
             activePanel.setVisible(true);
         }
 
-        activePanel.setBounds(getBounds());
+        activePanel.setBounds(0, 0, getWidth(), getHeight());
         activePanel.repaint();
+    }
+
+    public void setName(String name) {
+        username = name;
+        hostGameMenu.setName(name);
+    }
+
+    public String getName() {
+        return username;
     }
 }

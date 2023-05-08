@@ -85,7 +85,9 @@ public class ClientFinder implements Runnable {
             sendData = ("GAME_HOSTING_" + newName).getBytes();
             sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 9999);
 
-            selfClient.setName(newName);
+            if(selfClient != null) {
+                selfClient.setName(newName);
+            }
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
