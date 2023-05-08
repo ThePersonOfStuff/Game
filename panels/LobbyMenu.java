@@ -7,17 +7,20 @@ import javax.swing.JPanel;
 
 import comms.HostData;
 
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.Socket;
 
-public class LobbyMenu extends JPanel implements Runnable{
+public class LobbyMenu extends JPanel implements Runnable, ActionListener{
     private Screen parent;
 
     private JList<String> nameList;
     private DefaultListModel<String> names;
 
-    private JButton leaveLobby;
+    private JButton leaveLobbyButton;
 
     private Socket hostSocket;
 
@@ -91,5 +94,19 @@ public class LobbyMenu extends JPanel implements Runnable{
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == leaveLobbyButton) {
+            leaveLobby();
+            parent.switchPanels(PanelType.JOIN_GAME);
+        }
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, getWidth(), getHeight());
     }
 }

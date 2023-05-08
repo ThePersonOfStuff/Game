@@ -3,11 +3,9 @@ package comms;
 import java.net.DatagramSocket;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
@@ -31,17 +29,12 @@ public class HostFinder implements Runnable{
             receiveData = new byte[1000];
             recievePacket = new DatagramPacket(receiveData, receiveData.length);
 
-            socket = new DatagramSocket(9999, InetAddress.getByName("0.0.0.0"));
+            socket = new DatagramSocket(9999);
             socket.setSoTimeout(1000);
         } catch (SocketException e) {
-            try {
-                socket = new DatagramSocket(8458, InetAddress.getByName("0.0.0.0"));
-                socket.setSoTimeout(1000);
-            } catch (SocketException | UnknownHostException e2) {
-                e2.printStackTrace();
-            }
-        } catch (UnknownHostException e) {
+            System.out.println("Socket port not available! you could be running multiple client instances.");
             e.printStackTrace();
+
         }
 
         foundHosts = new DefaultListModel<>();

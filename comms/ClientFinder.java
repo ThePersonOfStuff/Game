@@ -20,15 +20,16 @@ public class ClientFinder implements Runnable {
     private DefaultListModel<ClientData> clientSockets;
     private boolean running;
     private ClientData selfClient;
+    private String name;
 
     public ClientFinder(String hostName) {
-        try {
+        try {            
             socket = new DatagramSocket();
             socket.setBroadcast(true);
             
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(1000);
-            
+
             sendData = ("GAME HOSTING_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
             sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 9999);
         } catch (IOException e) {
@@ -36,6 +37,8 @@ public class ClientFinder implements Runnable {
         }
 
         clientSockets = new DefaultListModel<>();
+
+        name = hostName;
     }
 
     public static void main(String[] args) {
@@ -53,7 +56,9 @@ public class ClientFinder implements Runnable {
     public void run() {
         if(selfClient == null) {
             try {
-                selfClient = new ClientData(new Socket("127.0.0.1", serverSocket.getLocalPort()));
+                selfClient = new ClientData(new Socket("127.0.0.1", serverSocket.getLocalPort()), name);
+                clientSockets.addElement(selfClient);
+                serverSocket.accept();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,7 +72,6 @@ public class ClientFinder implements Runnable {
             }
             try {
                 socket.send(sendPacket);
-                
                 Socket acceptedSocket = serverSocket.accept();
 
                 System.out.println("CLIENT FOUND!!!!! WOOO!!!");
@@ -82,12 +86,14 @@ public class ClientFinder implements Runnable {
 
     public void updateName(String newName) {
         try {
-            sendData = ("GAME_HOSTING_" + newName).getBytes();
+            sendData = ("GAME HOSTING_" + newName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
             sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 9999);
 
             if(selfClient != null) {
                 selfClient.setName(newName);
             }
+
+            name = newName;
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
