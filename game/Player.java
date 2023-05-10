@@ -8,6 +8,7 @@ public class Player {
     private int id;
     private double xPos;
     private double yPos;
+    private String name;
 
     public Player(int id, double x, double y) {
         this.id = id;
@@ -76,5 +77,13 @@ public class Player {
 
     public int getID() {
         return id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }

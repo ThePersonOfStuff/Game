@@ -20,6 +20,7 @@ public class GameState {
 
         // the host will send you your id to start, then it will start the player
         // sending loop in the pattern [list], [list], etc
+        //the first time it sends a player info it will also send the name (names must be less than 255 characters)
         try {
             int myID = host.getInputStream().read();
             byte[] playerData = new byte[17];
@@ -45,10 +46,14 @@ public class GameState {
                 }
 
                 Player player = new Player(playerData);
-                players.put(Integer.valueOf(playerData[0]), player);
                 if (playerData[0] == myID) {
                     me = player;
                 }
+                byte[] name = new byte[host.getInputStream().read()];
+                host.getInputStream().read(name);
+                System.out.println(new String(name));
+                player.setName(new String(name));
+                players.put(Integer.valueOf(playerData[0]), player);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,6 +75,7 @@ public class GameState {
                 if (inputBufferPos >= 17) {
                     if (inputBuffer[0] != me.getID()) {
                         if (players.get(Integer.valueOf(inputBuffer[0])) == null) {
+                            System.out.println("New player id: " + inputBuffer[0]);
                             Player player = new Player(inputBuffer);
                             players.put(Integer.valueOf(inputBuffer[0]), player);
                         } else {
@@ -87,9 +93,11 @@ public class GameState {
     public void draw(Graphics g, int width, int height) {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
-        g.setColor(Color.RED);
         for (Player player : players.values()) {
+            g.setColor(Color.RED);
             g.fillRect((int) player.getX(), (int) player.getY(), 25, 25);
+            g.setColor(Color.BLACK);
+            g.drawString(player.getName(), (int)player.getX(), (int)player.getY());
         }
     }
 

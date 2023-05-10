@@ -32,9 +32,22 @@ public class GameHoster implements Runnable {
 
         for (int i = 0; i < clients.size(); i++) {
             Player player = new Player(i, 50 + 50 * i, 50 + 50 * i);
-            player.sendPositionData(clients.get(i).socket());
+            //player.sendPositionData(clients.get(i).socket());
             clientBuffers.add(new byte[18]);
             players.add(player);
+        }
+
+        // send starting data to clients
+        for (int i = 0; i < clients.size(); i++) {
+            for (int j = 0; j < players.size(); j++) {
+                players.get(j).sendPositionData(clients.get(i).socket());
+                try {
+                    clients.get(i).outputStream().write(clients.get(j).name().length());
+                    clients.get(i).outputStream().write(clients.get(j).name().getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         running = true;
@@ -47,8 +60,8 @@ public class GameHoster implements Runnable {
 
             // send data to clients
             for (int i = 0; i < clients.size(); i++) {
-                for (Player player : players) {
-                    player.sendPositionData(clients.get(i).socket());
+                for (int j = 0; j < players.size(); j++) {
+                    players.get(j).sendPositionData(clients.get(i).socket());
                 }
             }
 

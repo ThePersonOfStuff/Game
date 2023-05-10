@@ -90,13 +90,11 @@ public class Screen extends JFrame implements Runnable{
                 lobbyMenu.joinHost(joinGameMenu.selectedHost());
             }
             case PLAYING_GAME -> {
-                System.out.println("fDSA");
                 if(activePanel == lobbyMenu) {
                     gamePanel.startGame(lobbyMenu.getHost());
                 } else if(activePanel == hostGameMenu) {
                     gamePanel.startGame(hostGameMenu.getHost());
                 }
-                System.out.println("ASDf");
                 activePanel = gamePanel;
             }
         }
