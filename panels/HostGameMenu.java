@@ -3,11 +3,10 @@ package panels;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import comms.ClientData;
 import comms.ClientFinder;
+import game.GameHoster;
 
 import javax.swing.JList;
 
@@ -17,8 +16,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.IOException;
+import java.net.Socket;
 
-public class HostGameMenu extends JPanel implements ActionListener, ListSelectionListener {
+public class HostGameMenu extends JPanel implements ActionListener {
     private Screen parent;
 
     private JButton startGameButton;
@@ -38,7 +39,6 @@ public class HostGameMenu extends JPanel implements ActionListener, ListSelectio
         setLayout(null);
 
         startGameButton = new MenuButton("Start game");
-        startGameButton.setEnabled(false);
         add(startGameButton);
         startGameButton.addActionListener(this);
         returnToMenuButton = new MenuButton("Main menu");
@@ -61,7 +61,6 @@ public class HostGameMenu extends JPanel implements ActionListener, ListSelectio
         clientList.setFixedCellHeight(50);
         clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         clientList.setCellRenderer(new PlayerCellRenderer());
-        clientList.addListSelectionListener(this);
     }
 
     @Override
@@ -73,8 +72,24 @@ public class HostGameMenu extends JPanel implements ActionListener, ListSelectio
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == startGameButton) {
-            parent.switchPanels(PanelType.PLAYING_GAME);
             stopClientSearch();
+            //its gaming time
+            Thread gameHosterThread = new Thread(new GameHoster(clientFinder.clientList()));
+            gameHosterThread.start();
+
+            //read own 255 message first
+            try {
+                System.out.println("EEE");
+                int byt = clientFinder.selfSocket().getInputStream().read();
+                if(byt != 255) {
+                    System.exit(1);
+                    throw new IllegalArgumentException();
+                }
+                System.out.println("OOO");
+            } catch (IOException e2) {
+                e2.printStackTrace();
+            }
+            parent.switchPanels(PanelType.PLAYING_GAME);
         } else if (e.getSource() == returnToMenuButton) {
             parent.switchPanels(PanelType.MAIN_MENU);
             stopClientSearch();
@@ -90,18 +105,14 @@ public class HostGameMenu extends JPanel implements ActionListener, ListSelectio
         clientFinder.stop();
     }
 
-    @Override
-    public void valueChanged(ListSelectionEvent e) {
-        if(clientList.getSelectedIndex() == -1) {
-            startGameButton.setEnabled(false);
-        } else {
-            startGameButton.setEnabled(true);
-        }
-    }
-
     public void setName(String name) {
         if(clientFinder != null) {
             clientFinder.updateName(name);
         }
+    }
+
+    public Socket getHost() {
+        System.out.println("qwwer");
+        return clientFinder.selfSocket();
     }
 }

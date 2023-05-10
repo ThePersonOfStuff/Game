@@ -22,6 +22,8 @@ public class PlayerCellRenderer extends JPanel implements ListCellRenderer<Objec
             displayText = ((HostData)value).name();
         } else if(value instanceof ClientData) {
             displayText = ((ClientData)value).name();
+        } else {
+            displayText = value.toString();
         }
         selected = isSelected;
         return this;

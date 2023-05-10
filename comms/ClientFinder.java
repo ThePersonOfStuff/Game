@@ -10,7 +10,6 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 
 public class ClientFinder implements Runnable {
     private DatagramSocket socket;
@@ -21,6 +20,7 @@ public class ClientFinder implements Runnable {
     private boolean running;
     private ClientData selfClient;
     private String name;
+    private Socket selfSocket;
 
     public ClientFinder(String hostName) {
         try {            
@@ -54,11 +54,12 @@ public class ClientFinder implements Runnable {
 
     @Override
     public void run() {
-        if(selfClient == null) {
+        if(selfClient == null || selfSocket == null) {
             try {
-                selfClient = new ClientData(new Socket("127.0.0.1", serverSocket.getLocalPort()), name);
+                selfSocket = new Socket();
+                selfSocket.connect(serverSocket.getLocalSocketAddress());
+                selfClient = new ClientData(serverSocket.accept(), name);
                 clientSockets.addElement(selfClient);
-                serverSocket.accept();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -72,10 +73,25 @@ public class ClientFinder implements Runnable {
             }
             try {
                 socket.send(sendPacket);
+                
+                //check for clients leaving
+                for(int i = 0; i < clientSockets.size(); i++) {
+                    if(clientSockets.get(i).inputStream().available() > 0) {
+                        int byt = clientSockets.get(i).inputStream().read();
+                        if(byt == 255) {
+                            clientSockets.get(i).leave();
+                        } else {
+                            System.out.println("?????");
+                        }
+                    }
+                }
                 Socket acceptedSocket = serverSocket.accept();
 
                 System.out.println("CLIENT FOUND!!!!! WOOO!!!");
-                clientSockets.addElement(new ClientData(acceptedSocket));
+                ClientData client = new ClientData(acceptedSocket);
+                clientSockets.addElement(client);
+                client.sendNames(clientSockets);
+
             } catch (SocketTimeoutException e) {
                 System.out.println("No clients found");
             } catch (IOException e) {
@@ -92,6 +108,19 @@ public class ClientFinder implements Runnable {
             if(selfClient != null) {
                 selfClient.setName(newName);
             }
+            //remove old name and set new name
+            for(int i = 0; i < clientSockets.size(); i++) {
+                if(clientSockets.get(i) != selfClient) {
+                    try {
+                        clientSockets.get(i).outputStream().write(name.getBytes());
+                        clientSockets.get(i).outputStream().write(1);
+                        clientSockets.get(i).outputStream().write(newName.getBytes());
+                        clientSockets.get(i).outputStream().write(0);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
             name = newName;
         } catch (UnknownHostException e) {
@@ -99,11 +128,19 @@ public class ClientFinder implements Runnable {
         }
     }
 
-    public ListModel<ClientData> clientList() {
+    public DefaultListModel<ClientData> clientList() {
         return clientSockets;
     }
 
     public void stop() {
         running = false;
+    }
+
+    public ClientData selfClient() {
+        return selfClient;
+    }
+
+    public Socket selfSocket() {
+        return selfSocket;
     }
 }

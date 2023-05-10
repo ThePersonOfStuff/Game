@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import javax.swing.DefaultListModel;
+
 public class ClientData {
     private Socket socket;
     private String clientName;
@@ -19,23 +21,22 @@ public class ClientData {
 
             clientName = "";
 
-            int byt = -1;
-            while(byt != 0) {
-                while(byt == -1) {
-                    try {
-                        byt = inputStream.read();
-                    } catch (IOException e) {
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e2) {
-                            e2.printStackTrace();
-                        }
-                    }
+            boolean nameFound = false;
+            while(!nameFound) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    System.out.println("Waiting for name");
                 }
 
-                if(byt != 0) {
-                    clientName += (char)byt;
-                    byt = -1;
+                while(inputStream.available() > 0) {
+                    int byt = inputStream.read();
+                    if(byt == 0) {
+                        nameFound = true;
+                        break;
+                    } else {
+                        clientName += (char)byt;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -82,5 +83,26 @@ public class ClientData {
 
     public void setName(String n) {
         clientName = n;
+    }
+
+    public void sendNames(DefaultListModel<ClientData> otherClients) {
+        for(int i = 0; i < otherClients.size(); i++) {
+            String clientName = otherClients.get(i).name();
+            try {
+                outputStream.write(clientName.getBytes());
+                outputStream.write(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void leave() {
+        try {
+            outputStream.write(clientName.getBytes());
+            outputStream.write(1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -30,6 +30,8 @@ public class JoinGameMenu extends JPanel implements ActionListener, ListSelectio
 
     private Thread hostFinderThread;
 
+    private HostData lastSelectedHost;
+
     public JoinGameMenu(Screen p) {
         setVisible(false);
 
@@ -96,6 +98,11 @@ public class JoinGameMenu extends JPanel implements ActionListener, ListSelectio
             joinGameButton.setEnabled(false);
         } else {
             joinGameButton.setEnabled(true);
+            lastSelectedHost = hostList.getSelectedValue();
         }
+    }
+
+    public HostData selectedHost() {
+        return lastSelectedHost;
     }
 }

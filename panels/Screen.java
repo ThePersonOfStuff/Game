@@ -12,6 +12,8 @@ public class Screen extends JFrame implements Runnable{
     private MainMenu mainMenu;
     private JoinGameMenu joinGameMenu;
     private HostGameMenu hostGameMenu;
+    private LobbyMenu lobbyMenu;
+    private GamePanel gamePanel;
     private String username;
 
     public Screen() {
@@ -26,9 +28,15 @@ public class Screen extends JFrame implements Runnable{
         
         hostGameMenu = new HostGameMenu(this);
         add(hostGameMenu);
+
+        lobbyMenu = new LobbyMenu(this);
+        add(lobbyMenu);
+
+        gamePanel = new GamePanel(this);
+        add(gamePanel);
         
         activePanel = mainMenu;
-        panels = new JPanel[]{mainMenu, joinGameMenu, hostGameMenu};
+        panels = new JPanel[]{mainMenu, joinGameMenu, hostGameMenu, lobbyMenu};
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -78,10 +86,18 @@ public class Screen extends JFrame implements Runnable{
                 joinGameMenu.startHostSearch();
             }
             case GAME_LOBBY -> {
-                
+                activePanel = lobbyMenu;
+                lobbyMenu.joinHost(joinGameMenu.selectedHost());
             }
             case PLAYING_GAME -> {
-
+                System.out.println("fDSA");
+                if(activePanel == lobbyMenu) {
+                    gamePanel.startGame(lobbyMenu.getHost());
+                } else if(activePanel == hostGameMenu) {
+                    gamePanel.startGame(hostGameMenu.getHost());
+                }
+                System.out.println("ASDf");
+                activePanel = gamePanel;
             }
         }
 
