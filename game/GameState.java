@@ -1,10 +1,10 @@
 package game;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
+
 
 public class GameState {
     private Socket hostSocket;
@@ -14,6 +14,8 @@ public class GameState {
 
     private byte[] inputBuffer;
     private int inputBufferPos;
+
+    private Level level = new Level();
 
     public GameState(Socket host) {
         hostSocket = host;
@@ -63,7 +65,9 @@ public class GameState {
         inputBufferPos = 0;
     }
 
-    public void updatePositions() {
+    public void updatePositions(HashMap<String, Boolean> keysPressed) {
+        //move own player
+        me.move(level, keysPressed);
         try {
             // send own position
             me.sendPositionData(hostSocket);
@@ -91,17 +95,11 @@ public class GameState {
     }
 
     public void draw(Graphics g, int width, int height) {
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, width, height);
+        g.translate(-(int)me.getX() + width / 2, -(int)me.getY() + height/2);
+        level.draw(g, 0, 0);
         for (Player player : players.values()) {
-            g.setColor(Color.RED);
-            g.fillRect((int) player.getX(), (int) player.getY(), 25, 25);
-            g.setColor(Color.BLACK);
-            g.drawString(player.getName(), (int)player.getX(), (int)player.getY());
+            player.draw(g);
         }
-    }
-
-    public void moveMeRight() {
-        me.setX(me.getX() + 1);
+        g.translate((int)me.getX(), (int)me.getY());
     }
 }
