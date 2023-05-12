@@ -1,6 +1,9 @@
 package game;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -12,11 +15,25 @@ public class GameHoster implements Runnable {
     private ArrayList<Player> players;
     private DefaultListModel<ClientData> clients;
     private ArrayList<byte[]> clientBuffers; // stores i, followed by data
+    private ArrayList<Item> items;
+    private int framesPassed = 0;
+    private Level level;
 
     public GameHoster(DefaultListModel<ClientData> clients) {
         this.clients = clients;
         clientBuffers = new ArrayList<>();
         players = new ArrayList<>();
+        items = new ArrayList<>();
+
+        try {
+            FileInputStream f = new FileInputStream(new File("game/levels/level1.level"));
+            ObjectInputStream o = new ObjectInputStream(f);
+
+            level = (Level) o.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
     }
 
     @Override
@@ -32,7 +49,6 @@ public class GameHoster implements Runnable {
 
         for (int i = 0; i < clients.size(); i++) {
             Player player = new Player(i, 50 + 50 * i, 50 + 50 * i);
-            //player.sendPositionData(clients.get(i).socket());
             clientBuffers.add(new byte[18]);
             players.add(player);
         }
@@ -58,10 +74,35 @@ public class GameHoster implements Runnable {
                 e.printStackTrace();
             }
 
+            framesPassed++;
+
+            for(int i = 0; i < items.size(); i++) {
+                items.get(i).move(level);
+                for(Player player : players) {
+                    if(player.collidesWith(items.get(i))) {
+                        for(int j = 0; j < clients.size(); j++) {
+                            items.get(i).sendRemoval(clients.get(j).socket());
+                        }
+                        items.remove(i);
+                        i--;
+                    }
+                }
+            }
+
+            if(framesPassed%100 == 1 && items.size() < players.size()) {
+                //summon a new item at a random position
+                items.add(new Sword(players.size() + items.size(), Math.random()*level.getWidth(), 50));
+            }
+
             // send data to clients
             for (int i = 0; i < clients.size(); i++) {
                 for (int j = 0; j < players.size(); j++) {
-                    players.get(j).sendPositionData(clients.get(i).socket());
+                    if(j != i || framesPassed == 1) {
+                        players.get(j).sendPositionData(clients.get(i).socket());
+                    }
+                }
+                for(int j = 0; j < items.size(); j++) {
+                    items.get(j).sendPositionData(clients.get(i).socket());
                 }
             }
 

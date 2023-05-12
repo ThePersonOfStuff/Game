@@ -1,28 +1,41 @@
 package game;
 
 import java.awt.Graphics;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.HashMap;
-
 
 public class GameState {
     private Socket hostSocket;
 
     private HashMap<Integer, Player> players;
+    private HashMap<Integer, Item> items;
     private Player me;
 
     private byte[] inputBuffer;
     private int inputBufferPos;
 
-    private Level level = new Level();
+    private Level level;
 
     public GameState(Socket host) {
         hostSocket = host;
+        try {
+            FileInputStream f = new FileInputStream(new File("game/levels/level1.level"));
+            ObjectInputStream o = new ObjectInputStream(f);
+
+            level = (Level) o.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
 
         // the host will send you your id to start, then it will start the player
         // sending loop in the pattern [list], [list], etc
-        //the first time it sends a player info it will also send the name (names must be less than 255 characters)
+        // the first time it sends a player info it will also send the name (names must
+        // be less than 255 characters)
         try {
             int myID = host.getInputStream().read();
             byte[] playerData = new byte[17];
@@ -61,12 +74,13 @@ public class GameState {
             e.printStackTrace();
         }
 
-        inputBuffer = new byte[17];
+        inputBuffer = new byte[18];
         inputBufferPos = 0;
+        items = new HashMap<>();
     }
 
     public void updatePositions(HashMap<String, Boolean> keysPressed) {
-        //move own player
+        // move own player
         me.move(level, keysPressed);
         try {
             // send own position
@@ -76,15 +90,22 @@ public class GameState {
             while (hostSocket.getInputStream().available() > 0) {
                 inputBuffer[inputBufferPos] = (byte) hostSocket.getInputStream().read();
                 inputBufferPos++;
-                if (inputBufferPos >= 17) {
-                    if (inputBuffer[0] != me.getID()) {
-                        if (players.get(Integer.valueOf(inputBuffer[0])) == null) {
-                            System.out.println("New player id: " + inputBuffer[0]);
-                            Player player = new Player(inputBuffer);
-                            players.put(Integer.valueOf(inputBuffer[0]), player);
+                if(inputBufferPos >= 17 && players.containsKey(Integer.valueOf(inputBuffer[0]))) {
+                    players.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
+                    
+                    inputBufferPos = 0;
+                }
+                else if (inputBufferPos >= 18) {
+                    //It's iteming time
+                    if(items.containsKey(Integer.valueOf(inputBuffer[0]))) {
+                        if(inputBuffer[1] == -1) {
+                            items.remove(Integer.valueOf(inputBuffer[0]));
                         } else {
-                            players.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
+                            items.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
                         }
+                    } else {
+                        System.out.println("New item!");
+                        items.put(Integer.valueOf(inputBuffer[0]), Item.newItem(inputBuffer));
                     }
                     inputBufferPos = 0;
                 }
@@ -95,11 +116,13 @@ public class GameState {
     }
 
     public void draw(Graphics g, int width, int height) {
-        g.translate(-(int)me.getX() + width / 2, -(int)me.getY() + height/2);
+        g.translate(-(int) me.getX() + width / 2, -(int) me.getY() + height / 2);
         level.draw(g, 0, 0);
         for (Player player : players.values()) {
             player.draw(g);
         }
-        g.translate((int)me.getX(), (int)me.getY());
+        for(Item item : items.values()) {
+            item.draw(g);
+        }
     }
 }

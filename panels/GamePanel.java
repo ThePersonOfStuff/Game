@@ -2,16 +2,17 @@ package panels;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.ActionEvent;
 import java.net.Socket;
 import java.util.HashMap;
 
+import javax.swing.AbstractAction;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 
 import game.GameState;
 
-public class GamePanel extends JPanel implements KeyListener {
+public class GamePanel extends JPanel {
     private Screen parent;
 
     private GameState state;
@@ -24,13 +25,74 @@ public class GamePanel extends JPanel implements KeyListener {
         keysPressed.put("RIGHT", false);
         keysPressed.put("JUMP", false);
         keysPressed.put("FALL", false);
+
+        getActionMap().put("Jump pressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("JUMP", true);
+            }
+        });
+
+        getActionMap().put("Jump released", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("JUMP", false);
+            }
+        });
+
+        getActionMap().put("Left pressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("LEFT", true);
+            }
+        });
+
+        getActionMap().put("Left released", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("LEFT", false);
+            }
+        });
+
+        getActionMap().put("Right pressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("RIGHT", true);
+            }
+        });
+
+        getActionMap().put("Right released", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("RIGHT", false);
+            }
+        });
+
+        getActionMap().put("Down pressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("FALL", true);
+            }
+        });
+
+        getActionMap().put("Down released", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keysPressed.put("FALL", false);
+            }
+        });
+
+        getInputMap().put(KeyStroke.getKeyStroke("pressed W"), "Jump pressed");
+        getInputMap().put(KeyStroke.getKeyStroke("released W"), "Jump released");
+        getInputMap().put(KeyStroke.getKeyStroke("pressed A"), "Left pressed");
+        getInputMap().put(KeyStroke.getKeyStroke("released A"), "Left released");
+        getInputMap().put(KeyStroke.getKeyStroke("pressed D"), "Right pressed");
+        getInputMap().put(KeyStroke.getKeyStroke("released D"), "Right released");
+        getInputMap().put(KeyStroke.getKeyStroke("pressed S"), "Down pressed");
+        getInputMap().put(KeyStroke.getKeyStroke("released S"), "Down released");
     }
 
     public void startGame(Socket host) {
-        addKeyListener(this);
-        parent.addKeyListener(this);
-        requestFocus();
-
         state = new GameState(host);
     }
 
@@ -40,36 +102,5 @@ public class GamePanel extends JPanel implements KeyListener {
         g.fillRect(0, 0, getWidth(), getHeight());
         state.updatePositions(keysPressed);
         state.draw(g, getWidth(), getHeight());
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-        return;
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        if(e.getKeyChar() == 'a') {
-            keysPressed.put("LEFT", true);
-        } else if(e.getKeyChar() == 'd') {
-            keysPressed.put("RIGHT", true);
-        } else if(e.getKeyChar() == 'w') {
-            keysPressed.put("JUMP", true);
-        } else if(e.getKeyChar() == 's') {
-            keysPressed.put("FALL", true);
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if(e.getKeyChar() == 'a') {
-            keysPressed.put("LEFT", false);
-        } else if(e.getKeyChar() == 'd') {
-            keysPressed.put("RIGHT", false);
-        } else if(e.getKeyChar() == 'w') {
-            keysPressed.put("JUMP", false);
-        } else if(e.getKeyChar() == 's') {
-            keysPressed.put("FALL", false);
-        }
     }
 }
