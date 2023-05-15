@@ -23,20 +23,24 @@ public class Player implements Collidable{
     private int framesSinceLastTouchedRight = 100;
     private HashMap<String, Boolean> lastKeysPressed;
     private HashMap<String, Integer> framesSinceLastKeysPressed;
+    private int levelId;
+    private boolean hasCollected = false;
 
     public Player(int id, double x, double y) {
         this.id = id;
+        levelId = 1;
         xPos = x;
         yPos = y;
     }
 
     public Player(byte[] initBytes) {
-        if (initBytes.length != 17) {
-            throw new IllegalArgumentException();
+        if (initBytes.length != 18) {
+            throw new IllegalArgumentException("Player initialization byte array not correct size");
         }
         id = initBytes[0];
-        xPos = toDouble(initBytes, 1);
-        yPos = toDouble(initBytes, 9);
+        levelId = initBytes[1];
+        xPos = toDouble(initBytes, 2);
+        yPos = toDouble(initBytes, 10);
 
         lastKeysPressed = new HashMap<>();
         framesSinceLastKeysPressed = new HashMap<>();
@@ -53,9 +57,10 @@ public class Player implements Collidable{
     }
 
     public void sendPositionData(Socket socket) {
-        // pattern: id, xPos, yPos
+        // pattern: id, level, xPos, yPos
         try {
             socket.getOutputStream().write(id);
+            socket.getOutputStream().write(levelId);
             socket.getOutputStream().write(toByteArray(xPos));
             socket.getOutputStream().write(toByteArray(yPos));
         } catch (IOException e) {
@@ -64,10 +69,11 @@ public class Player implements Collidable{
     }
 
     public void readPositionData(byte[] data, int offset) {
-        for (int i = offset; i <= data.length - 17; i += 17) {
+        for (int i = offset; i <= data.length - 18; i += 18) {
             if (data[i] == id) {
-                xPos = toDouble(data, i + 1);
-                yPos = toDouble(data, i + 9);
+                levelId = data[i + 1];
+                xPos = toDouble(data, i + 2);
+                yPos = toDouble(data, i + 10);
             }
         }
     }
@@ -155,14 +161,14 @@ public class Player implements Collidable{
         }
 
         if (keysPressed.get("LEFT")) {
-            if (framesSinceLastTouchedGround < 5) {
+            if (framesSinceLastTouchedGround < 2) {
                 xVel -= 9;
             } else {
                 xVel -= 2.5;
             }
         }
         if (keysPressed.get("RIGHT")) {
-            if (framesSinceLastTouchedGround < 5) {
+            if (framesSinceLastTouchedGround < 2) {
                 xVel += 9;
             } else {
                 xVel += 2.5;
@@ -230,5 +236,25 @@ public class Player implements Collidable{
         for(String key : keysPressed.keySet()) {
             framesSinceLastKeysPressed.put(key, framesSinceLastKeysPressed.getOrDefault(key, 100) + 1);
         }
+    }
+
+    public int getLevelID() {
+        return levelId;
+    }
+
+    public void setLevelID(int id) {
+        levelId = id;
+    }
+    
+    public boolean hasCollected() {
+        return hasCollected;
+    }
+
+    public void collect() {
+        hasCollected = true;
+    }
+
+    public void resetCollected() {
+        hasCollected = false;
     }
 }

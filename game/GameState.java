@@ -18,15 +18,20 @@ public class GameState {
     private byte[] inputBuffer;
     private int inputBufferPos;
 
+    private Level[] levels;
     private Level level;
 
     public GameState(Socket host) {
         hostSocket = host;
         try {
-            FileInputStream f = new FileInputStream(new File("game/levels/level1.level"));
-            ObjectInputStream o = new ObjectInputStream(f);
-
-            level = (Level) o.readObject();
+            File levelFolder = new File("game/levels");
+            File[] levelFiles = levelFolder.listFiles();
+            levels = new Level[levelFiles.length];
+            for (int i = 0; i < levelFiles.length; i++) {
+                FileInputStream f = new FileInputStream(new File("game/levels/level" + (i + 1) + ".level"));
+                ObjectInputStream o = new ObjectInputStream(f);
+                levels[i] = (Level) o.readObject();
+            }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(0);
@@ -38,7 +43,7 @@ public class GameState {
         // be less than 255 characters)
         try {
             int myID = host.getInputStream().read();
-            byte[] playerData = new byte[17];
+            byte[] playerData = new byte[18];
             players = new HashMap<>();
             // wait for duplicate players before finishing init
             while (true) {
@@ -63,7 +68,9 @@ public class GameState {
                 Player player = new Player(playerData);
                 if (playerData[0] == myID) {
                     me = player;
+                    level = levels[me.getLevelID() - 1];
                 }
+
                 byte[] name = new byte[host.getInputStream().read()];
                 host.getInputStream().read(name);
                 System.out.println(new String(name));
@@ -86,30 +93,33 @@ public class GameState {
             // send own position
             me.sendPositionData(hostSocket);
 
-            // read all position updates besides self
+            // read all position updates
             while (hostSocket.getInputStream().available() > 0) {
                 inputBuffer[inputBufferPos] = (byte) hostSocket.getInputStream().read();
                 inputBufferPos++;
-                if(inputBufferPos >= 17 && players.containsKey(Integer.valueOf(inputBuffer[0]))) {
-                    players.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
-                    
-                    inputBufferPos = 0;
-                }
-                else if (inputBufferPos >= 18) {
-                    //It's iteming time
-                    if(items.containsKey(Integer.valueOf(inputBuffer[0]))) {
-                        if(inputBuffer[1] == -1) {
-                            items.remove(Integer.valueOf(inputBuffer[0]));
-                        } else {
-                            items.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
-                        }
+                if (inputBufferPos >= 18) {
+                    if (players.containsKey(Integer.valueOf(inputBuffer[0]))) {
+                        players.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
+                        inputBufferPos = 0;
                     } else {
-                        System.out.println("New item!");
-                        items.put(Integer.valueOf(inputBuffer[0]), Item.newItem(inputBuffer));
+                        // It's iteming time
+                        if (items.containsKey(Integer.valueOf(inputBuffer[0]))) {
+                            if (inputBuffer[1] == -1) {
+                                items.remove(Integer.valueOf(inputBuffer[0]));
+                            } else {
+                                items.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
+                            }
+                        } else {
+                            System.out.println("New item!");
+                            items.put(Integer.valueOf(inputBuffer[0]), Item.newItem(inputBuffer));
+                        }
+                        inputBufferPos = 0;
                     }
-                    inputBufferPos = 0;
                 }
             }
+
+            // update level
+            level = levels[me.getLevelID() - 1];
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,10 +129,14 @@ public class GameState {
         g.translate(-(int) me.getX() + width / 2, -(int) me.getY() + height / 2);
         level.draw(g, 0, 0);
         for (Player player : players.values()) {
-            player.draw(g);
+            if (me.getLevelID() == player.getLevelID()) {
+                player.draw(g);
+            }
         }
-        for(Item item : items.values()) {
-            item.draw(g);
+        for (Item item : items.values()) {
+            if (me.getLevelID() == item.getLevelID()) {
+                item.draw(g);
+            }
         }
     }
 }
