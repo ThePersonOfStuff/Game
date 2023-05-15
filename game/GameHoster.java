@@ -97,7 +97,7 @@ public class GameHoster implements Runnable {
 
             if (framesPassed % 100 == 0 && items.size() < players.size()) {
                 // summon a new sword at a random position
-                items.add(new Sword(players.size() + items.size(), Math.random() * levels[0].getWidth(), 50));
+                items.add(new Sword(players.size() + items.size(), (Math.random() * (levels[0].getWidth() - 200) + 100), 50));
             }
 
             //detect player win/lose

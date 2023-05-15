@@ -201,16 +201,15 @@ public class Level implements Serializable {
     public byte collisions(Collidable collider) {
         byte collisions = 0;
 
-        // get the range of occupied tiles
-        int xFirst = (int) Math.ceil((collider.getX() - collider.getWidth() / 2) / tileSize) - 1;
-        int xLast = (int) (collider.getX() + collider.getWidth() / 2) / tileSize;
-        int yFirst = (int) Math.ceil((collider.getY() - collider.getHeight() / 2) / tileSize) - 1;
-        int yLast = (int) (collider.getY() + collider.getHeight() / 2) / tileSize;
-
         int xFirstOther = (int) (collider.getX() - collider.getWidth() / 2) / tileSize;
         int xLastOther = (int) Math.ceil((collider.getX() + collider.getWidth() / 2) / tileSize) - 1;
         int yFirstOther = (int) (collider.getY() - collider.getHeight() / 2) / tileSize;
         int yLastOther = (int) Math.ceil((collider.getY() + collider.getHeight() / 2) / tileSize) - 1;
+
+        double dXFirst = (collider.getX() - collider.getWidth() / 2);
+        double dYFirst = (collider.getY() - collider.getHeight() / 2);
+        double dXLast = (collider.getX() + collider.getWidth() / 2);
+        double dYLast = (collider.getY() + collider.getHeight() / 2);
 
         for (int x = xFirstOther; x <= xLastOther; x++) {
             for (int y = yFirstOther; y <= yLastOther; y++) {
@@ -228,30 +227,31 @@ public class Level implements Serializable {
         }
 
         // check for collisions in lower tiles
-        if (yLast >= tileMap.length) {
+        if (dYLast / tileSize >= tileMap.length) {
             collisions |= DOWN_BITMASK;
-        } else if (yLast >= 0) {
-            for (int i = xFirstOther; i <= xLastOther; i++) {
+        } else if (dYLast / tileSize >= 0) {
+            for (int i = (int)(dXFirst/tileSize); i < dXLast/tileSize; i++) {
                 if (i < 0 || i >= tileMap[0].length) {
                     continue;
                 }
-                if (tileMap[yLast][i] == 1) {
+                if (tileMap[(int)(dYLast / tileSize)][i] == 1) {
                     collisions |= DOWN_BITMASK;
                     yLastOther -= 1;
+                    dYLast = Math.floor(dYLast / tileSize) * tileSize;
                     break;
                 }
             }
         }
 
         // check for collisions in upper tiles
-        if (yFirst < 0) {
+        if ((int)Math.ceil(dYFirst / tileSize - 1) < 0) {
             collisions |= UP_BITMASK;
-        } else if (yFirst < tileMap.length) {
-            for (int i = xFirstOther; i <= xLastOther; i++) {
+        } else if ((int)Math.ceil(dYFirst / tileSize - 1) < tileMap.length) {
+            for (int i = (int)(dXFirst/tileSize); i < dXLast/tileSize; i++) {
                 if (i < 0 || i >= tileMap[0].length) {
                     continue;
                 }
-                if (tileMap[yFirst][i] == 1) {
+                if (tileMap[(int)Math.ceil(dYFirst / tileSize - 1)][i] == 1) {
                     collisions |= UP_BITMASK;
                     yFirstOther += 1;
                     break;
@@ -260,14 +260,14 @@ public class Level implements Serializable {
         }
 
         // check for collisions in right tiles
-        if (xLast >= tileMap[0].length) {
+        if (dXLast / tileSize >= tileMap[0].length) {
             collisions |= RIGHT_BITMASK;
-        } else if (xLast >= 0) {
-            for (int i = yFirstOther; i <= yLastOther; i++) {
+        } else if (dXLast / tileSize >= 0) {
+            for (int i = (int)(dYFirst / tileSize); i < dYLast / tileSize; i++) {
                 if (i < 0 || i >= tileMap.length) {
                     continue;
                 }
-                if (tileMap[i][xLast] == 1) {
+                if (tileMap[i][(int)(dXLast / tileSize)] == 1) {
                     collisions |= RIGHT_BITMASK;
                     break;
                 }
@@ -275,21 +275,19 @@ public class Level implements Serializable {
         }
 
         // check for collisions in left tiles
-        if (xFirst < 0) {
+        if ((int)Math.ceil(dXFirst / tileSize - 1) < 0) {
             collisions |= LEFT_BITMASK;
-        } else if (xFirst < tileMap[0].length) {
-            for (int i = yFirstOther; i <= yLastOther; i++) {
+        } else if ((int)Math.ceil(dXFirst / tileSize - 1) < tileMap[0].length) {
+            for (int i = (int)(dYFirst / tileSize); i < dYLast / tileSize; i++) {
                 if (i < 0 || i >= tileMap.length) {
                     continue;
                 }
-                if (tileMap[i][xFirst] == 1) {
+                if (tileMap[i][(int)Math.ceil(dXFirst / tileSize - 1)] == 1) {
                     collisions |= LEFT_BITMASK;
                     break;
                 }
             }
         }
-
-        // TODO: Corners
 
         return collisions;
     }
@@ -318,7 +316,7 @@ public class Level implements Serializable {
 
         g.setColor(Color.BLACK);
         // instructionText = "Get a sword then return to the green area!";
-        if(instructionText == null) {
+        if (instructionText == null) {
             instructionText = "";
         }
         g.drawString(instructionText, x + 50, y + getHeight() - 100);

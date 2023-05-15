@@ -103,4 +103,8 @@ public class GamePanel extends JPanel {
         state.updatePositions(keysPressed);
         state.draw(g, getWidth(), getHeight());
     }
+
+    public void leaveGame() {
+        parent.switchPanels(PanelType.MAIN_MENU);
+    }
 }
