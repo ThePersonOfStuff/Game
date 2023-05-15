@@ -102,7 +102,7 @@ public class GameHoster implements Runnable {
 
             //detect player win/lose
             for(Player player : players) {
-                byte collisions = levels[player.getLevelID()].getNonTileCollisions(player);
+                byte collisions = levels[player.getLevelID() - 1].getNonTileCollisions(player);
                 if((collisions & Level.LAVA_BITMASK) != 0) {
                     //send player back to beginning
                     player.setX(50);
