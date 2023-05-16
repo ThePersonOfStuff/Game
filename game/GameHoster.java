@@ -16,7 +16,10 @@ public class GameHoster implements Runnable {
     private DefaultListModel<ClientData> clients;
     private ArrayList<byte[]> clientBuffers; // stores i, followed by data
     private ArrayList<Item> items;
+    private ArrayList<Integer> takenIds;
     private int framesPassed = 0;
+    private int swordsCount = 0;
+    private int knivesCount = 0;
     private Level[] levels;
 
     public GameHoster(DefaultListModel<ClientData> clients) {
@@ -24,6 +27,7 @@ public class GameHoster implements Runnable {
         clientBuffers = new ArrayList<>();
         players = new ArrayList<>();
         items = new ArrayList<>();
+        takenIds = new ArrayList<>();
 
         try {
             File levelFolder = new File("game/levels");
@@ -55,6 +59,7 @@ public class GameHoster implements Runnable {
             Player player = new Player(i, 50 + 50 * i, 50 + 50 * i);
             clientBuffers.add(new byte[19]);
             players.add(player);
+            takenIds.add(i);
         }
 
         // send starting data to clients
@@ -80,45 +85,65 @@ public class GameHoster implements Runnable {
 
             framesPassed++;
 
-            //Item collision detection
-            for (int i = 0; i < items.size(); i++) {
-                items.get(i).move(levels[0]);
+            // Item collision detection
+            itemloop: for (int i = 0; i < items.size(); i++) {
+                items.get(i).move(levels[items.get(i).getLevelID() - 1]);
                 for (Player player : players) {
                     if (player.collidesWith(items.get(i)) && !player.hasCollected()) {
                         player.collect();
-                        for (int j = 0; j < clients.size(); j++) {
-                            items.get(i).sendRemoval(clients.get(j).socket());
+                        if (items.get(i).getOwner() != null) {
+                            items.get(i).getOwner().resetCollected();
                         }
-                        items.remove(i);
-                        i--;
+                        items.get(i).setOwner(player);
+                        continue itemloop;
                     }
                 }
             }
 
-            if (framesPassed % 100 == 0 && items.size() < players.size()) {
-                // summon a new sword at a random position
-                items.add(new Sword(players.size() + items.size(), (Math.random() * (levels[0].getWidth() - 200) + 100), 50));
+            // remove items whos owner has trancended
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).getOwner() != null
+                        && items.get(i).getOwner().getLevelID() != items.get(i).getLevelID()) {
+                    for (int j = 0; j < clients.size(); j++) {
+                        items.get(i).sendRemoval(clients.get(j).socket());
+                    }
+                    takenIds.remove(Integer.valueOf(items.get(i).getID()));
+                    items.remove(i);
+                    i--;
+                }
             }
 
-            //detect player win/lose
-            for(Player player : players) {
+            if (framesPassed % 100 == 0 && swordsCount < players.size()) {
+                // summon a new sword at a random position
+                items.add(new Sword(getNewID(), (Math.random() * (levels[0].getWidth() - 200) + 100), 50));
+                swordsCount++;
+            }
+
+            if (framesPassed % 100 == 0 && knivesCount < players.size()) {
+                // summon a new knife at upper right corner
+                System.out.println("New knife!");
+                items.add(new Knife(getNewID(), levels[1].getWidth() - 50 - Math.random() * 150, 50));
+                knivesCount++;
+            }
+
+            // detect player win/lose
+            for (Player player : players) {
                 byte collisions = levels[player.getLevelID() - 1].getNonTileCollisions(player);
-                if((collisions & Level.LAVA_BITMASK) != 0) {
-                    //send player back to beginning
+                if ((collisions & Level.LAVA_BITMASK) != 0) {
+                    // send player back to beginning
                     player.setX(50);
                     player.setY(50);
-                    for(int i = 0; i < clients.size(); i++) {
+                    for (int i = 0; i < clients.size(); i++) {
                         player.sendPositionData(clients.get(i).socket());
                     }
-                }
-                else if((collisions & Level.WIN_BITMASK) != 0 && player.hasCollected()) {
+                } else if ((collisions & Level.WIN_BITMASK) != 0 && player.hasCollected()) {
                     System.out.println("E");
-                    //send player back to beginning and increment level
+                    // send player back to beginning and increment level
                     player.setX(50);
                     player.setY(50);
                     player.setLevelID(player.getLevelID() + 1);
                     player.resetCollected();
-                    for(int i = 0; i < clients.size(); i++) {
+                    for (int i = 0; i < clients.size(); i++) {
                         player.sendPositionData(clients.get(i).socket());
                     }
                 }
@@ -156,5 +181,15 @@ public class GameHoster implements Runnable {
 
     public void stop() {
         running = false;
+    }
+
+    private int getNewID() {
+        int id = 0;
+        while (takenIds.contains(id)) {
+            id++;
+        }
+        takenIds.add(id);
+
+        return id;
     }
 }

@@ -20,13 +20,15 @@ public abstract class Item implements Serializable, Collidable {
     private double xVel = 0;
     private double yVel = 0;
     private int id;
+    private Player owner = null;
 
     static {
         images = new HashMap<>();
         try {
             images.put("sword", ImageIO.read(new File("game/Images/Sword.png")));
             images.put("player", ImageIO.read(new File("game/Images/Player.png")));
-        }catch (IOException e) {
+            images.put("knives", ImageIO.read(new File("game/Images/Knives.png")));
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -38,7 +40,9 @@ public abstract class Item implements Serializable, Collidable {
     }
 
     public abstract void draw(Graphics g);
+
     public abstract double getWidth();
+
     public abstract double getHeight();
 
     public double getX() {
@@ -62,6 +66,7 @@ public abstract class Item implements Serializable, Collidable {
     }
 
     public abstract byte getType();
+
     @Override
     public abstract int getLevelID();
 
@@ -114,10 +119,11 @@ public abstract class Item implements Serializable, Collidable {
         int id = data[offset];
         Constructor<? extends Item> itemConstructor = null;
         try {
-        switch(data[offset+1]) {
-            case 0 -> itemConstructor = Sword.class.getDeclaredConstructor(int.class, double.class, double.class);
-            default -> throw new IllegalArgumentException("That item type does not exist");
-        }
+            switch (data[offset + 1]) {
+                case 0 -> itemConstructor = Sword.class.getDeclaredConstructor(int.class, double.class, double.class);
+                case 1 -> itemConstructor = Knife.class.getDeclaredConstructor(int.class, double.class, double.class);
+                default -> throw new IllegalArgumentException("That item type does not exist");
+            }
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
@@ -127,7 +133,7 @@ public abstract class Item implements Serializable, Collidable {
         Item item = null;
         try {
             item = itemConstructor.newInstance(id, xPos, yPos);
-        } catch (Exception e) { 
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -139,37 +145,52 @@ public abstract class Item implements Serializable, Collidable {
     }
 
     public void move(Level level) {
-        yVel += 1;
+        if (owner == null) {
+            yVel += 1;
 
-        byte collisions = level.collisions(this);
-        // if colliding with ground, eliminate all positive y velocity and snap up to
-        // tile
-        if ((collisions & Level.DOWN_BITMASK) != 0) {
-            yVel = yVel > 0 ? 0 : yVel;
-            level.snapUp(this);
+            byte collisions = level.collisions(this);
+            // if colliding with ground, eliminate all positive y velocity and snap up to
+            // tile
+            if ((collisions & Level.DOWN_BITMASK) != 0) {
+                yVel = yVel > 0 ? 0 : yVel;
+                level.snapUp(this);
+            }
+
+            // if colliding with up, eliminate all negative y velocity and snap down to tile
+            if ((collisions & Level.UP_BITMASK) != 0) {
+                yVel = yVel < 0 ? 0 : yVel;
+                level.snapDown(this);
+            }
+
+            // if colliding with right, eliminate all positive x velocity and snap up to
+            // tile
+            if ((collisions & Level.RIGHT_BITMASK) != 0) {
+                xVel = xVel > 0 ? 0 : xVel;
+                level.snapLeft(this);
+            }
+
+            // if colliding with left, eliminate all negative x velocity and snap up to tile
+            if ((collisions & Level.LEFT_BITMASK) != 0) {
+                xVel = xVel < 0 ? 0 : xVel;
+                level.snapRight(this);
+            }
+
+            xPos += xVel;
+            yPos += yVel;
+        } else {
+            //lerp bottom part of item to top of player
+            double goalX = owner.getX();
+            double goalY = owner.getY() - getHeight() / 2 - owner.getHeight()/2 - 10;
+            xPos = xPos * 0.6 + goalX * 0.4;
+            yPos = yPos * 0.6 + goalY * 0.4;
         }
+    }
 
-        // if colliding with up, eliminate all negative y velocity and snap down to tile
-        if ((collisions & Level.UP_BITMASK) != 0) {
-            yVel = yVel < 0 ? 0 : yVel;
-            level.snapDown(this);
-        }
+    public void setOwner(Player player) {
+        owner = player;
+    }
 
-        // if colliding with right, eliminate all positive x velocity and snap up to
-        // tile
-        if ((collisions & Level.RIGHT_BITMASK) != 0) {
-            xVel = xVel > 0 ? 0 : xVel;
-            level.snapLeft(this);
-        }
-
-        // if colliding with left, eliminate all negative x velocity and snap up to tile
-        if ((collisions & Level.LEFT_BITMASK) != 0) {
-            xVel = xVel < 0 ? 0 : xVel;
-            level.snapRight(this);
-        }
-
-
-        xPos += xVel;
-        yPos += yVel;
+    public Player getOwner() {
+        return owner;
     }
 }
