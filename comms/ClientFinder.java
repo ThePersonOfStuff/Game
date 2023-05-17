@@ -43,6 +43,7 @@ public class ClientFinder implements Runnable {
 
             sendData = ("GAME HOSTING_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
