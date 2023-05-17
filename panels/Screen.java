@@ -15,8 +15,11 @@ public class Screen extends JFrame implements Runnable{
     private LobbyMenu lobbyMenu;
     private GamePanel gamePanel;
     private String username;
+    private boolean debugMode;
 
-    public Screen() {
+    public Screen(boolean debug) {
+        debugMode = debug;
+
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(null);
 
@@ -122,5 +125,9 @@ public class Screen extends JFrame implements Runnable{
 
     public String getName() {
         return username;
+    }
+
+    public boolean debugMode() {
+        return debugMode;
     }
 }

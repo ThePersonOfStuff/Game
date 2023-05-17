@@ -41,7 +41,7 @@ public class Level implements Serializable {
     }
 
     public Level(byte[][] tiles) {
-        this(tiles, "Null");
+        this(tiles, "");
     }
 
     public Level(String instrs) {
@@ -315,10 +315,6 @@ public class Level implements Serializable {
         }
 
         g.setColor(Color.BLACK);
-        // instructionText = "Get a sword then return to the green area!";
-        if (instructionText == null) {
-            instructionText = "";
-        }
         g.drawString(instructionText, x + 50, y + getHeight() - 100);
     }
 
@@ -388,5 +384,16 @@ public class Level implements Serializable {
 
     public int getHeight() {
         return tileMap.length * tileSize;
+    }
+
+    public void teleportToWin(Player player) {
+        for(int i = 0; i < tileMap.length; i++) {
+            for(int j = 0; j < tileMap[i].length; j++) {
+                if(tileMap[i][j] == 3) {
+                    player.setX(j * tileSize);
+                    player.setY(i * tileSize);
+                }
+            }
+        }
     }
 }

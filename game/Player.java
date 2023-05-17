@@ -112,7 +112,7 @@ public class Player implements Collidable {
     public void draw(Graphics g, int x, int y) {
         g.drawImage(Item.images.get("player"), (int) (x - Item.images.get("player").getWidth() / 2),
                 (int) (y - Item.images.get("player").getHeight() / 2), null);
-        drawCenteredString(g, name, x, y);
+        drawCenteredString(g, name, x, y - (int)width/2 - 10);
     }
 
     public void draw(Graphics g) {
@@ -211,6 +211,8 @@ public class Player implements Collidable {
             yVel = yVel < 0 ? 0 : yVel;
             level.snapDown(this);
         }
+
+        collisions = level.collisions(this);
 
         // if colliding with right, eliminate all positive x velocity and snap up to
         // tile

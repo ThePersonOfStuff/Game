@@ -26,12 +26,14 @@ public class GameState {
         try {
             File levelFolder = new File("game/levels");
             File[] levelFiles = levelFolder.listFiles();
-            levels = new Level[levelFiles.length];
+            levels = new Level[levelFiles.length + 1];
             for (int i = 0; i < levelFiles.length; i++) {
                 FileInputStream f = new FileInputStream(new File("game/levels/level" + (i + 1) + ".level"));
                 ObjectInputStream o = new ObjectInputStream(f);
                 levels[i] = (Level) o.readObject();
             }
+
+            levels[levels.length - 1] = new WinLevel();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(0);
@@ -99,6 +101,12 @@ public class GameState {
                 inputBufferPos++;
                 if (inputBufferPos >= 18) {
                     if (players.containsKey(Integer.valueOf(inputBuffer[0]))) {
+                        //check for level id change
+                        if(players.get(Integer.valueOf(inputBuffer[0])).getLevelID() != inputBuffer[1]) {
+                            if(inputBuffer[1] == levels.length) {
+                                ((WinLevel)levels[inputBuffer[1] - 1]).addRank(players.get(Integer.valueOf(inputBuffer[0])));
+                            }
+                        }
                         players.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
                         inputBufferPos = 0;
                     } else {
@@ -110,7 +118,6 @@ public class GameState {
                                 items.get(Integer.valueOf(inputBuffer[0])).readPositionData(inputBuffer);
                             }
                         } else {
-                            System.out.println("New item!");
                             items.put(Integer.valueOf(inputBuffer[0]), Item.newItem(inputBuffer));
                         }
                         inputBufferPos = 0;
@@ -138,5 +145,26 @@ public class GameState {
                 item.draw(g);
             }
         }
+    }
+
+    public void skipLevel() {
+        me.setLevelID(me.getLevelID() + 1);
+    }
+
+    public void teleportToItem() {
+        Item item = null;
+        for(Item i : items.values()) {
+            if(i.getLevelID() == me.getLevelID()) {
+                item = i;
+                break;
+            }
+        }
+
+        me.setX(item.getX());
+        me.setY(item.getY());
+    }
+
+    public void teleportToExit() {
+        level.teleportToWin(me);
     }
 }

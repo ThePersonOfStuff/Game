@@ -82,6 +82,27 @@ public class GamePanel extends JPanel {
             }
         });
 
+        getActionMap().put("Skip level", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                state.skipLevel();
+            }
+        });
+
+        getActionMap().put("Teleport to item", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                state.teleportToItem();
+            }
+        });
+        
+        getActionMap().put("Teleport to exit", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                state.teleportToExit();
+            }
+        });
+
         getInputMap().put(KeyStroke.getKeyStroke("pressed W"), "Jump pressed");
         getInputMap().put(KeyStroke.getKeyStroke("released W"), "Jump released");
         getInputMap().put(KeyStroke.getKeyStroke("pressed A"), "Left pressed");
@@ -90,6 +111,11 @@ public class GamePanel extends JPanel {
         getInputMap().put(KeyStroke.getKeyStroke("released D"), "Right released");
         getInputMap().put(KeyStroke.getKeyStroke("pressed S"), "Down pressed");
         getInputMap().put(KeyStroke.getKeyStroke("released S"), "Down released");
+        if(parent.debugMode()) {
+            getInputMap().put(KeyStroke.getKeyStroke("pressed J"), "Skip level");
+            getInputMap().put(KeyStroke.getKeyStroke("pressed K"), "Teleport to item");
+            getInputMap().put(KeyStroke.getKeyStroke("pressed L"), "Teleport to exit");
+        }
     }
 
     public void startGame(Socket host) {

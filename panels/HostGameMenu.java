@@ -79,13 +79,11 @@ public class HostGameMenu extends JPanel implements ActionListener {
 
             //read own 255 message first
             try {
-                System.out.println("EEE");
                 int byt = clientFinder.selfSocket().getInputStream().read();
                 if(byt != 255) {
                     System.exit(1);
                     throw new IllegalArgumentException();
                 }
-                System.out.println("OOO");
             } catch (IOException e2) {
                 e2.printStackTrace();
             }
@@ -112,7 +110,6 @@ public class HostGameMenu extends JPanel implements ActionListener {
     }
 
     public Socket getHost() {
-        System.out.println("qwwer");
         return clientFinder.selfSocket();
     }
 }

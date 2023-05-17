@@ -87,7 +87,7 @@ public class ClientFinder implements Runnable {
                 }
                 Socket acceptedSocket = serverSocket.accept();
 
-                System.out.println("CLIENT FOUND!!!!! WOOO!!!");
+                System.out.println("CLIENT FOUND");
                 ClientData client = new ClientData(acceptedSocket);
                 clientSockets.addElement(client);
                 client.sendNames(clientSockets);

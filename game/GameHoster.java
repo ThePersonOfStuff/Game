@@ -20,6 +20,7 @@ public class GameHoster implements Runnable {
     private int framesPassed = 0;
     private int swordsCount = 0;
     private int knivesCount = 0;
+    private int halberdsCount = 0;
     private Level[] levels;
 
     public GameHoster(DefaultListModel<ClientData> clients) {
@@ -32,12 +33,14 @@ public class GameHoster implements Runnable {
         try {
             File levelFolder = new File("game/levels");
             File[] levelFiles = levelFolder.listFiles();
-            levels = new Level[levelFiles.length];
+            levels = new Level[levelFiles.length + 1];
             for (int i = 0; i < levelFiles.length; i++) {
                 FileInputStream f = new FileInputStream(new File("game/levels/level" + (i + 1) + ".level"));
                 ObjectInputStream o = new ObjectInputStream(f);
                 levels[i] = (Level) o.readObject();
             }
+
+            levels[levels.length - 1] = new WinLevel();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(0);
@@ -121,23 +124,36 @@ public class GameHoster implements Runnable {
 
             if (framesPassed % 100 == 0 && knivesCount < players.size()) {
                 // summon a new knife at upper right corner
-                System.out.println("New knife!");
-                items.add(new Knife(getNewID(), levels[1].getWidth() - 50 - Math.random() * 150, 50));
+                items.add(new Knife(getNewID(), levels[1].getWidth() - 50 - Math.random() * 100, 50));
                 knivesCount++;
+            }
+
+            if (framesPassed % 100 == 0 && halberdsCount < players.size()) {
+                // summon a new halberd at upper right corner
+                items.add(new Halberd(getNewID(), levels[2].getWidth() - 50 - Math.random() * 50, 50));
+                halberdsCount++;
             }
 
             // detect player win/lose
             for (Player player : players) {
                 byte collisions = levels[player.getLevelID() - 1].getNonTileCollisions(player);
                 if ((collisions & Level.LAVA_BITMASK) != 0) {
-                    // send player back to beginning
+                    // send player back to beginning and teleport owned item there as well
                     player.setX(50);
                     player.setY(50);
                     for (int i = 0; i < clients.size(); i++) {
                         player.sendPositionData(clients.get(i).socket());
                     }
+                    if (player.hasCollected()) {
+                        itemteleportloop: for (Item item : items) {
+                            if (item.getOwner() == player) {
+                                item.setX(50);
+                                item.setY(50);
+                                break itemteleportloop;
+                            }
+                        }
+                    }
                 } else if ((collisions & Level.WIN_BITMASK) != 0 && player.hasCollected()) {
-                    System.out.println("E");
                     // send player back to beginning and increment level
                     player.setX(50);
                     player.setY(50);

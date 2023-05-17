@@ -49,7 +49,6 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
             @Override
             public void componentResized(ComponentEvent e) {
                 nameList.setBounds(50, 50, getWidth() - 100, getHeight() - 200);
-                // startGameButton.setBounds(getWidth() / 2 - 225, getHeight() - 125, 150, 50);
                 leaveLobbyButton.setBounds(getWidth() / 2 + 75, getHeight() - 125, 150, 50);
             }
         });

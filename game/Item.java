@@ -28,6 +28,7 @@ public abstract class Item implements Serializable, Collidable {
             images.put("sword", ImageIO.read(new File("game/Images/Sword.png")));
             images.put("player", ImageIO.read(new File("game/Images/Player.png")));
             images.put("knives", ImageIO.read(new File("game/Images/Knives.png")));
+            images.put("halberd", ImageIO.read(new File("game/Images/Halberd.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,6 +123,7 @@ public abstract class Item implements Serializable, Collidable {
             switch (data[offset + 1]) {
                 case 0 -> itemConstructor = Sword.class.getDeclaredConstructor(int.class, double.class, double.class);
                 case 1 -> itemConstructor = Knife.class.getDeclaredConstructor(int.class, double.class, double.class);
+                case 2 -> itemConstructor = Halberd.class.getDeclaredConstructor(int.class, double.class, double.class);
                 default -> throw new IllegalArgumentException("That item type does not exist");
             }
         } catch (NoSuchMethodException e) {
