@@ -112,7 +112,7 @@ public class Player implements Collidable {
     public void draw(Graphics g, int x, int y) {
         g.drawImage(Item.images.get("player"), (int) (x - Item.images.get("player").getWidth() / 2),
                 (int) (y - Item.images.get("player").getHeight() / 2), null);
-        drawCenteredString(g, name, x, y - (int)width/2 - 10);
+        drawCenteredString(g, name, x, y - (int) width / 2 - 10);
     }
 
     public void draw(Graphics g) {
@@ -194,7 +194,8 @@ public class Player implements Collidable {
         // more friction if touching ground
         xVel *= (collisions & Level.DOWN_BITMASK) != 0 ? 0.6 : 0.8;
         // more y friction if pushing against wall
-        yVel *= ((collisions & (Level.LEFT_BITMASK | Level.RIGHT_BITMASK)) != 0 && !keysPressed.get("FALL")) ? 0.25 : 0.9;
+        yVel *= ((collisions & (Level.LEFT_BITMASK | Level.RIGHT_BITMASK)) != 0 && !keysPressed.get("FALL")) ? 0.25
+                : 0.9;
 
         // gravity!
         yVel += 2;

@@ -32,6 +32,7 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
     private boolean monitoring;
 
     public LobbyMenu(Screen p) {
+        setLayout(null);
         parent = p;
 
         names = new DefaultListModel<>();

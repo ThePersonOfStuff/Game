@@ -90,6 +90,7 @@ public class Screen extends JFrame implements Runnable{
             }
             case GAME_LOBBY -> {
                 activePanel = lobbyMenu;
+                lobbyMenu.setBounds(0, 0, getWidth(), getHeight());
                 lobbyMenu.joinHost(joinGameMenu.selectedHost());
             }
             case PLAYING_GAME -> {

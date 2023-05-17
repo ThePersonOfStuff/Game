@@ -12,6 +12,8 @@ import java.net.UnknownHostException;
 import javax.swing.DefaultListModel;
 
 public class ClientFinder implements Runnable {
+    public static InetAddress group;
+    public static int port = 4000;
     private DatagramSocket socket;
     private ServerSocket serverSocket;
     private byte[] sendData;
@@ -22,8 +24,17 @@ public class ClientFinder implements Runnable {
     private String name;
     private Socket selfSocket;
 
+    static {
+        try {
+            group = InetAddress.getByName("230.1.1.1");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ClientFinder(String hostName) {
         try {            
+
             socket = new DatagramSocket();
             socket.setBroadcast(true);
             
@@ -31,7 +42,7 @@ public class ClientFinder implements Runnable {
             serverSocket.setSoTimeout(1000);
 
             sendData = ("GAME HOSTING_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
-            sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 9999);
+            sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -103,7 +114,7 @@ public class ClientFinder implements Runnable {
     public void updateName(String newName) {
         try {
             sendData = ("GAME HOSTING_" + newName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
-            sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 9999);
+            sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
 
             if(selfClient != null) {
                 selfClient.setName(newName);
