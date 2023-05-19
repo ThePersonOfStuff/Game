@@ -93,8 +93,8 @@ public class HostGameMenu extends JPanel implements ActionListener {
             }
             parent.switchPanels(PanelType.PLAYING_GAME);
         } else if (e.getSource() == returnToMenuButton) {
+            exitClientSearch();
             parent.switchPanels(PanelType.MAIN_MENU);
-            stopClientSearch();
         }
     }
 
@@ -105,6 +105,10 @@ public class HostGameMenu extends JPanel implements ActionListener {
 
     public void stopClientSearch() {
         clientFinder.stop();
+    }
+
+    public void exitClientSearch() {
+        clientFinder.exit();
     }
 
     public void setName(String name) {

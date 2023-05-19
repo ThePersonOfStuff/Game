@@ -77,7 +77,7 @@ public class GameHoster implements Runnable {
                 }
             }
         }
-
+        
         running = true;
         while (running) {
             try {
@@ -87,7 +87,7 @@ public class GameHoster implements Runnable {
             }
 
             framesPassed++;
-
+            
             // Item collision detection
             itemloop: for (int i = 0; i < items.size(); i++) {
                 items.get(i).move(levels[items.get(i).getLevelID() - 1]);
@@ -102,7 +102,7 @@ public class GameHoster implements Runnable {
                     }
                 }
             }
-
+            
             // remove items whos owner has trancended
             for (int i = 0; i < items.size(); i++) {
                 if (items.get(i).getOwner() != null
@@ -115,7 +115,7 @@ public class GameHoster implements Runnable {
                     i--;
                 }
             }
-
+            
             if (framesPassed % 100 == 0 && swordsCount < players.size()) {
                 // summon a new sword at a random position
                 items.add(new Sword(getNewID(), (Math.random() * (levels[0].getWidth() - 200) + 100), 50));
@@ -127,13 +127,13 @@ public class GameHoster implements Runnable {
                 items.add(new Knife(getNewID(), levels[1].getWidth() - 50 - Math.random() * 100, 50));
                 knivesCount++;
             }
-
+            
             if (framesPassed % 100 == 0 && halberdsCount < players.size()) {
                 // summon a new halberd at upper right corner
                 items.add(new Halberd(getNewID(), levels[2].getWidth() - 50 - Math.random() * 50, 50));
                 halberdsCount++;
             }
-
+            
             // detect player win/lose
             for (Player player : players) {
                 byte collisions = levels[player.getLevelID() - 1].getNonTileCollisions(player);
@@ -164,7 +164,7 @@ public class GameHoster implements Runnable {
                     }
                 }
             }
-
+            
             // send data to clients
             for (int i = 0; i < clients.size(); i++) {
                 for (int j = 0; j < players.size(); j++) {

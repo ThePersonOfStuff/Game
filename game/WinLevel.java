@@ -19,16 +19,16 @@ public class WinLevel extends Level {
     @Override
     public void draw(Graphics g, int x, int y) {
         super.draw(g, x, y);
-        x += getWidth()/2;
-        y += getHeight()/4;
+        x += getWidth() / 2;
+        y += getHeight() / 4;
         Font prevFont = g.getFont();
         g.setFont(titleFont);
         g.setColor(Color.BLACK);
         drawCenteredString(g, "Winners:", x, y);
         g.setFont(prevFont);
         y += 50;
-        for(int i = 0; i < rankings.size(); i++) {
-            drawCenteredString(g, (i+1) + ": " + rankings.get(i).getName(), x, y);
+        for (int i = 0; i < rankings.size(); i++) {
+            drawCenteredString(g, (i + 1) + ": " + rankings.get(i).getName(), x, y);
             y += 25;
         }
     }
@@ -43,6 +43,7 @@ public class WinLevel extends Level {
     }
 
     public void addRank(Player player) {
-        rankings.add(player);
+        if (!rankings.contains(player))
+            rankings.add(player);
     }
 }

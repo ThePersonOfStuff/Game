@@ -23,6 +23,7 @@ public class ClientFinder implements Runnable {
     private ClientData selfClient;
     private String name;
     private Socket selfSocket;
+    private boolean exit = false;
 
     static {
         try {
@@ -33,15 +34,16 @@ public class ClientFinder implements Runnable {
     }
 
     public ClientFinder(String hostName) {
-        try {            
+        try {
 
             socket = new DatagramSocket();
             socket.setBroadcast(true);
-            
+
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(1000);
 
-            sendData = (HostFinder.hostingMessage + "_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
+            sendData = (HostFinder.hostingMessage + "_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress()
+                    + "_" + serverSocket.getLocalPort()).getBytes();
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,7 +67,7 @@ public class ClientFinder implements Runnable {
 
     @Override
     public void run() {
-        if(selfClient == null || selfSocket == null) {
+        if (selfClient == null || selfSocket == null) {
             try {
                 selfSocket = new Socket();
                 selfSocket.connect(serverSocket.getLocalSocketAddress());
@@ -76,6 +78,7 @@ public class ClientFinder implements Runnable {
             }
         }
         running = true;
+        exit = false;
         while (running) {
             try {
                 Thread.sleep(100);
@@ -84,12 +87,12 @@ public class ClientFinder implements Runnable {
             }
             try {
                 socket.send(sendPacket);
-                
-                //check for clients leaving
-                for(int i = 0; i < clientSockets.size(); i++) {
-                    if(clientSockets.get(i).inputStream().available() > 0) {
+
+                // check for clients leaving
+                for (int i = 0; i < clientSockets.size(); i++) {
+                    if (clientSockets.get(i).inputStream().available() > 0) {
                         int byt = clientSockets.get(i).inputStream().read();
-                        if(byt == 255) {
+                        if (byt == 255) {
                             clientSockets.get(i).leave();
                         } else {
                             System.out.println("?????");
@@ -109,42 +112,46 @@ public class ClientFinder implements Runnable {
                 e.printStackTrace();
             }
         }
-
         try {
-            //send leaving data out
-            byte[] leaveData = (HostFinder.notHostingMessage + "_" + name + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
+            // send leaving data out
+            byte[] leaveData = (HostFinder.notHostingMessage + "_" + name + "_"
+                    + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
             DatagramPacket leavePacket = new DatagramPacket(leaveData, leaveData.length, group, port);
             socket.send(leavePacket);
-            
 
-            //tell all connected clients that the host is leaving, kicking them out
-            for(int i = 0; i < clientSockets.size(); i++) {
-                clientSockets.get(i).outputStream().write(2);
+            if (exit) {
+                // tell all connected clients that the host is leaving, kicking them out
+                for (int i = 0; i < clientSockets.size(); i++) {
+                    clientSockets.get(i).outputStream().write(2);
+                }
+
+                // reset client list
+                clientSockets.clear();
+                
+                // reset self client
+                selfClient = null;
+                selfSocket = null;
             }
 
-            //clear client list
-            clientSockets.clear();
-
-            //reset self client
-            selfClient = null;
-            selfSocket = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public void updateName(String newName) {
         try {
-            sendData = ("GAME HOSTING_" + newName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
-            
+            sendData = ("GAME HOSTING_" + newName + "_" + InetAddress.getLocalHost().getHostAddress() + "_"
+                    + serverSocket.getLocalPort()).getBytes();
+
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
 
-            if(selfClient != null) {
+            if (selfClient != null) {
                 selfClient.setName(newName);
             }
-            //remove old name and set new name
-            for(int i = 0; i < clientSockets.size(); i++) {
-                if(clientSockets.get(i) != selfClient) {
+            // remove old name and set new name
+            for (int i = 0; i < clientSockets.size(); i++) {
+                if (clientSockets.get(i) != selfClient) {
                     try {
                         clientSockets.get(i).outputStream().write(name.getBytes());
                         clientSockets.get(i).outputStream().write(1);
@@ -168,6 +175,11 @@ public class ClientFinder implements Runnable {
 
     public void stop() {
         running = false;
+    }
+
+    public void exit() {
+        running = false;
+        exit = true;
     }
 
     public ClientData selfClient() {
