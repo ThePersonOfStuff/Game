@@ -230,11 +230,11 @@ public class Level implements Serializable {
         if (dYLast / tileSize >= tileMap.length) {
             collisions |= DOWN_BITMASK;
         } else if (dYLast / tileSize >= 0) {
-            for (int i = (int)(dXFirst/tileSize); i < dXLast/tileSize; i++) {
+            for (int i = (int) (dXFirst / tileSize); i < dXLast / tileSize; i++) {
                 if (i < 0 || i >= tileMap[0].length) {
                     continue;
                 }
-                if (tileMap[(int)(dYLast / tileSize)][i] == 1) {
+                if (tileMap[(int) (dYLast / tileSize)][i] == 1) {
                     collisions |= DOWN_BITMASK;
                     yLastOther -= 1;
                     dYLast = Math.floor(dYLast / tileSize) * tileSize;
@@ -244,14 +244,14 @@ public class Level implements Serializable {
         }
 
         // check for collisions in upper tiles
-        if ((int)Math.ceil(dYFirst / tileSize - 1) < 0) {
+        if ((int) Math.ceil(dYFirst / tileSize - 1) < 0) {
             collisions |= UP_BITMASK;
-        } else if ((int)Math.ceil(dYFirst / tileSize - 1) < tileMap.length) {
-            for (int i = (int)(dXFirst/tileSize); i < dXLast/tileSize; i++) {
+        } else if ((int) Math.ceil(dYFirst / tileSize - 1) < tileMap.length) {
+            for (int i = (int) (dXFirst / tileSize); i < dXLast / tileSize; i++) {
                 if (i < 0 || i >= tileMap[0].length) {
                     continue;
                 }
-                if (tileMap[(int)Math.ceil(dYFirst / tileSize - 1)][i] == 1) {
+                if (tileMap[(int) Math.ceil(dYFirst / tileSize - 1)][i] == 1) {
                     collisions |= UP_BITMASK;
                     yFirstOther += 1;
                     break;
@@ -263,11 +263,11 @@ public class Level implements Serializable {
         if (dXLast / tileSize >= tileMap[0].length) {
             collisions |= RIGHT_BITMASK;
         } else if (dXLast / tileSize >= 0) {
-            for (int i = (int)(dYFirst / tileSize); i < dYLast / tileSize; i++) {
+            for (int i = (int) (dYFirst / tileSize); i < dYLast / tileSize; i++) {
                 if (i < 0 || i >= tileMap.length) {
                     continue;
                 }
-                if (tileMap[i][(int)(dXLast / tileSize)] == 1) {
+                if (tileMap[i][(int) (dXLast / tileSize)] == 1) {
                     collisions |= RIGHT_BITMASK;
                     break;
                 }
@@ -275,14 +275,14 @@ public class Level implements Serializable {
         }
 
         // check for collisions in left tiles
-        if ((int)Math.ceil(dXFirst / tileSize - 1) < 0) {
+        if ((int) Math.ceil(dXFirst / tileSize - 1) < 0) {
             collisions |= LEFT_BITMASK;
-        } else if ((int)Math.ceil(dXFirst / tileSize - 1) < tileMap[0].length) {
-            for (int i = (int)(dYFirst / tileSize); i < dYLast / tileSize; i++) {
+        } else if ((int) Math.ceil(dXFirst / tileSize - 1) < tileMap[0].length) {
+            for (int i = (int) (dYFirst / tileSize); i < dYLast / tileSize; i++) {
                 if (i < 0 || i >= tileMap.length) {
                     continue;
                 }
-                if (tileMap[i][(int)Math.ceil(dXFirst / tileSize - 1)] == 1) {
+                if (tileMap[i][(int) Math.ceil(dXFirst / tileSize - 1)] == 1) {
                     collisions |= LEFT_BITMASK;
                     break;
                 }
@@ -300,6 +300,8 @@ public class Level implements Serializable {
      * @param y - the y coordinate of the upper left corner
      */
     public void draw(Graphics g, int x, int y) {
+        int size = 4;
+
         for (int i = 0; i < tileMap.length; i++) {
             for (int j = 0; j < tileMap[i].length; j++) {
                 switch (tileMap[i][j]) {
@@ -311,6 +313,101 @@ public class Level implements Serializable {
                 }
 
                 g.fillRect(x + j * tileSize, y + i * tileSize, tileSize, tileSize);
+
+                // ohohoho its fun time
+                if (tileMap[i][j] != 1) {
+                    g.setColor(Color.DARK_GRAY);
+                    if (j == 0) {
+                        g.fillRect(x + j * tileSize - size, y + i * tileSize - size, size, tileSize + size * 2);
+                    } else if (j == tileMap[i].length - 1) {
+                        g.fillRect(x + j * tileSize + tileSize, y + i * tileSize - size, size, tileSize + size * 2);
+                    }
+                    if (i == 0) {
+                        g.fillRect(x + j * tileSize - size, y + i * tileSize - size, tileSize + size * 2, size);
+                    } else if (i == tileMap.length - 1) {
+                        g.fillRect(x + j * tileSize - size, y + i * tileSize + tileSize, tileSize + size * 2, size);
+                    }
+                }
+
+                switch (tileMap[i][j]) {
+                    case 1 -> {
+                        g.setColor(Color.DARK_GRAY);
+                        // check surrounding tiles for other solids
+                        if (j > 0 && tileMap[i][j - 1] != 1) {
+                            // left tile
+                            g.fillRect(x + j * tileSize, y + i * tileSize, size, tileSize);
+                        }
+                        if (j < tileMap[i].length - 1 && tileMap[i][j + 1] != 1) {
+                            // right tile
+                            g.fillRect(x + j * tileSize + tileSize - size, y + i * tileSize, size, tileSize);
+                        }
+                        if (i > 0 && tileMap[i - 1][j] != 1) {
+                            // upper tile
+                            g.fillRect(x + j * tileSize, y + i * tileSize, tileSize, size);
+                        }
+                        if (i < tileMap.length - 1 && tileMap[i + 1][j] != 1) {
+                            // bottom tile
+                            g.fillRect(x + j * tileSize, y + i * tileSize + tileSize - size, tileSize, size);
+                        }
+
+                        // check for corners
+                        if (j > 0 && i > 0 && tileMap[i - 1][j - 1] != 1) {
+                            //lower right corner
+                            g.fillRect(x + j * tileSize, y + i * tileSize, size, size);
+                        }
+                        if (j > 0 && i < tileMap.length - 1 && tileMap[i + 1][j - 1] != 1) {
+                            //lower left corner
+                            g.fillRect(x + j * tileSize, y + i * tileSize + tileSize - size, size, size);
+                        }
+                        if (j < tileMap[i].length - 1&& i > 0 && tileMap[i - 1][j + 1] != 1) {
+                            //upper right corner
+                            g.fillRect(x + j * tileSize + tileSize - size, y + i * tileSize, size, size);
+                        }
+                        if (j < tileMap[i].length - 1 && i < tileMap.length - 1 && tileMap[i + 1][j + 1] != 1) {
+                            //upper left corner
+                            g.fillRect(x + j * tileSize + tileSize - size, y + i * tileSize + tileSize - size, size, size);
+                        }
+                    }
+                    case 2 -> {
+                        g.setColor(new Color(175, 0, 0));
+
+                        // check surrounding tiles for other solids
+                        if (j > 0 && tileMap[i][j - 1] == 0) {
+                            // left tile
+                            g.fillRect(x + j * tileSize, y + i * tileSize, size, tileSize);
+                        }
+                        if (j < tileMap[i].length - 1 && tileMap[i][j + 1] == 0) {
+                            // right tile
+                            g.fillRect(x + j * tileSize + tileSize - size, y + i * tileSize, size, tileSize);
+                        }
+                        if (i > 0 && tileMap[i - 1][j] == 0) {
+                            // upper tile
+                            g.fillRect(x + j * tileSize, y + i * tileSize, tileSize, size);
+                        }
+                        if (i < tileMap.length - 1 && tileMap[i + 1][j] == 0) {
+                            // bottom tile
+                            g.fillRect(x + j * tileSize, y + i * tileSize + tileSize - size, tileSize, size);
+                        }
+
+                        // check for corners
+                        if (j > 0 && i > 0 && tileMap[i - 1][j - 1] == 0) {
+                            //lower right corner
+                            g.fillRect(x + j * tileSize, y + i * tileSize, size, size);
+                        }
+                        if (j > 0 && i < tileMap.length - 1 && tileMap[i + 1][j - 1] == 0) {
+                            //lower left corner
+                            g.fillRect(x + j * tileSize, y + i * tileSize + tileSize - size, size, size);
+                        }
+                        if (j < tileMap[i].length - 1&& i > 0 && tileMap[i - 1][j + 1] == 0) {
+                            //upper right corner
+                            g.fillRect(x + j * tileSize + tileSize - size, y + i * tileSize, size, size);
+                        }
+                        if (j < tileMap[i].length - 1 && i < tileMap.length - 1 && tileMap[i + 1][j + 1] == 0) {
+                            //upper left corner
+                            g.fillRect(x + j * tileSize + tileSize - size, y + i * tileSize + tileSize - size, size, size);
+                        }
+                    }
+                }
             }
         }
 
@@ -387,9 +484,9 @@ public class Level implements Serializable {
     }
 
     public void teleportToWin(Player player) {
-        for(int i = 0; i < tileMap.length; i++) {
-            for(int j = 0; j < tileMap[i].length; j++) {
-                if(tileMap[i][j] == 3) {
+        for (int i = 0; i < tileMap.length; i++) {
+            for (int j = 0; j < tileMap[i].length; j++) {
+                if (tileMap[i][j] == 3) {
                     player.setX(j * tileSize);
                     player.setY(i * tileSize);
                 }

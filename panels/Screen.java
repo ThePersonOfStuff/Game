@@ -6,6 +6,8 @@ import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 public class Screen extends JFrame implements Runnable{
     private JPanel activePanel;
     private JPanel[] panels;
@@ -46,6 +48,18 @@ public class Screen extends JFrame implements Runnable{
             public void componentResized(ComponentEvent e) {
                 activePanel.setBounds(0, 0, getWidth(), getHeight());
                 activePanel.repaint();
+            }
+        });
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if(activePanel == hostGameMenu) {
+                    hostGameMenu.exitClientSearch();
+                }
+                if(activePanel == lobbyMenu) {
+                    lobbyMenu.leaveLobby();
+                }
             }
         });
     }
