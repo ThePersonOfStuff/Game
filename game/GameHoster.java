@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -71,7 +72,7 @@ public class GameHoster implements Runnable {
                 players.get(j).sendPositionData(clients.get(i).socket());
                 try {
                     clients.get(i).outputStream().write(clients.get(j).name().length());
-                    clients.get(i).outputStream().write(clients.get(j).name().getBytes());
+                    clients.get(i).outputStream().write(clients.get(j).name().getBytes(StandardCharsets.UTF_8));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class GameState {
@@ -75,8 +76,8 @@ public class GameState {
 
                 byte[] name = new byte[host.getInputStream().read()];
                 host.getInputStream().read(name);
-                System.out.println(new String(name));
-                player.setName(new String(name));
+                System.out.println(new String(name, StandardCharsets.UTF_8));
+                player.setName(new String(name, StandardCharsets.UTF_8));
                 players.put(Integer.valueOf(playerData[0]), player);
             }
         } catch (IOException e) {

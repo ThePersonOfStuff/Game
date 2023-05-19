@@ -16,6 +16,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class LobbyMenu extends JPanel implements Runnable, ActionListener{
     private Screen parent;
@@ -59,7 +60,7 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
             hostSocket = new Socket();
             hostSocket.connect(hostData.address());
 
-            hostSocket.getOutputStream().write(parent.getName().getBytes());
+            hostSocket.getOutputStream().write(parent.getName().getBytes(StandardCharsets.UTF_8));
             hostSocket.getOutputStream().write(0);
 
             nameMonitor = new Thread(this);

@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
@@ -53,7 +54,7 @@ public class HostFinder implements Runnable {
                     receiveData[i] = 0;
                 }
                 socket.receive(recievePacket);
-                String resp = new String(receiveData);
+                String resp = new String(receiveData, StandardCharsets.UTF_8);
                 System.out.println(resp);
                 if (resp.trim().substring(0, hostingMessage.length()).equals(hostingMessage)) {
                     String[] sections = resp.trim().split("_");

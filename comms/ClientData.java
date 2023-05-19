@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import javax.swing.DefaultListModel;
 
@@ -89,7 +90,7 @@ public class ClientData {
         for(int i = 0; i < otherClients.size(); i++) {
             String clientName = otherClients.get(i).name();
             try {
-                outputStream.write(clientName.getBytes());
+                outputStream.write(clientName.getBytes(StandardCharsets.UTF_8));
                 outputStream.write(0);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -99,7 +100,7 @@ public class ClientData {
 
     public void leave() {
         try {
-            outputStream.write(clientName.getBytes());
+            outputStream.write(clientName.getBytes(StandardCharsets.UTF_8));
             outputStream.write(1);
         } catch (IOException e) {
             e.printStackTrace();

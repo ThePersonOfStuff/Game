@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
 import javax.swing.DefaultListModel;
 
@@ -43,7 +44,7 @@ public class ClientFinder implements Runnable {
             serverSocket.setSoTimeout(1000);
 
             sendData = (HostFinder.hostingMessage + "_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress()
-                    + "_" + serverSocket.getLocalPort()).getBytes();
+                    + "_" + serverSocket.getLocalPort()).getBytes(StandardCharsets.UTF_8);
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,7 +116,7 @@ public class ClientFinder implements Runnable {
         try {
             // send leaving data out
             byte[] leaveData = (HostFinder.notHostingMessage + "_" + name + "_"
-                    + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
+                    + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes(StandardCharsets.UTF_8);
             DatagramPacket leavePacket = new DatagramPacket(leaveData, leaveData.length, group, port);
             socket.send(leavePacket);
 
@@ -127,7 +128,7 @@ public class ClientFinder implements Runnable {
 
                 // reset client list
                 clientSockets.clear();
-                
+
                 // reset self client
                 selfClient = null;
                 selfSocket = null;
@@ -142,7 +143,7 @@ public class ClientFinder implements Runnable {
     public void updateName(String newName) {
         try {
             sendData = ("GAME HOSTING_" + newName + "_" + InetAddress.getLocalHost().getHostAddress() + "_"
-                    + serverSocket.getLocalPort()).getBytes();
+                    + serverSocket.getLocalPort()).getBytes(StandardCharsets.UTF_8);
 
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
 
@@ -153,9 +154,9 @@ public class ClientFinder implements Runnable {
             for (int i = 0; i < clientSockets.size(); i++) {
                 if (clientSockets.get(i) != selfClient) {
                     try {
-                        clientSockets.get(i).outputStream().write(name.getBytes());
+                        clientSockets.get(i).outputStream().write(name.getBytes(StandardCharsets.UTF_8));
                         clientSockets.get(i).outputStream().write(1);
-                        clientSockets.get(i).outputStream().write(newName.getBytes());
+                        clientSockets.get(i).outputStream().write(newName.getBytes(StandardCharsets.UTF_8));
                         clientSockets.get(i).outputStream().write(0);
                     } catch (IOException e) {
                         e.printStackTrace();
