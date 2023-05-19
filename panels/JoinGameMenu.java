@@ -12,6 +12,7 @@ import comms.HostFinder;
 import javax.swing.JList;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -70,6 +71,8 @@ public class JoinGameMenu extends JPanel implements ActionListener, ListSelectio
     public void paintComponent(Graphics g) {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(Color.BLACK);
+        drawCenteredString(g, "Hosts",getWidth()/2, 25);
     }
 
     @Override
@@ -104,5 +107,16 @@ public class JoinGameMenu extends JPanel implements ActionListener, ListSelectio
 
     public HostData selectedHost() {
         return lastSelectedHost;
+    }
+
+    
+    private void drawCenteredString(Graphics g, String text, int xPos, int yPos) {
+        FontMetrics metrics = g.getFontMetrics(getFont());
+        
+        int x = xPos - metrics.stringWidth(text) / 2;
+        int y = yPos - metrics.getHeight() / 2 + metrics.getAscent();
+        
+        g.setFont(getFont());
+        g.drawString(text, x, y);
     }
 }

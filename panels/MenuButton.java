@@ -11,7 +11,7 @@ public class MenuButton extends JButton {
     public MenuButton(String name) {
         super(name);
         setBorder(BorderFactory.createEmptyBorder());
-        setBackground(new Color(100, 150, 175));
+        setBackground(new Color(100, 175, 75));
     }
 
     @Override

@@ -10,7 +10,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 
 public class HostFinder implements Runnable {
-    private static final String hostingMessage = "GAME HOSTING";
+    public static final String hostingMessage = "GAME HOSTING";
+    public static final String notHostingMessage = "GAME NOT HOSTING";
     private MulticastSocket socket;
     private byte[] receiveData;
     private DatagramPacket recievePacket;
@@ -60,6 +61,15 @@ public class HostFinder implements Runnable {
                             sections[1]);
                     if (!foundHosts.contains(data)) {
                         foundHosts.addElement(data);
+                    }
+                }
+                else if(resp.trim().substring(0, notHostingMessage.length()).equals(notHostingMessage)) {
+                    //time to remove it;
+                    String[] sections = resp.trim().split("_");
+                    HostData data = new HostData(new InetSocketAddress(sections[2], Integer.parseInt(sections[3])),
+                            sections[1]);
+                    if(!foundHosts.removeElement(data)) {
+                        System.out.println("Must be an off-by-one error");
                     }
                 }
             } catch (SocketTimeoutException e) {

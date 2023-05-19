@@ -41,9 +41,8 @@ public class ClientFinder implements Runnable {
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(1000);
 
-            sendData = ("GAME HOSTING_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
+            sendData = (HostFinder.hostingMessage + "_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
-            
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -110,11 +109,34 @@ public class ClientFinder implements Runnable {
                 e.printStackTrace();
             }
         }
+
+        try {
+            //send leaving data out
+            byte[] leaveData = (HostFinder.notHostingMessage + "_" + name + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
+            DatagramPacket leavePacket = new DatagramPacket(leaveData, leaveData.length, group, port);
+            socket.send(leavePacket);
+            
+
+            //tell all connected clients that the host is leaving, kicking them out
+            for(int i = 0; i < clientSockets.size(); i++) {
+                clientSockets.get(i).outputStream().write(2);
+            }
+
+            //clear client list
+            clientSockets.clear();
+
+            //reset self client
+            selfClient = null;
+            selfSocket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateName(String newName) {
         try {
             sendData = ("GAME HOSTING_" + newName + "_" + InetAddress.getLocalHost().getHostAddress() + "_" + serverSocket.getLocalPort()).getBytes();
+            
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
 
             if(selfClient != null) {

@@ -4,11 +4,11 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
 
 import comms.HostData;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,7 +39,6 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
         nameList = new JList<>(names);
         add(nameList);
         nameList.setFixedCellHeight(50);
-        nameList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         nameList.setCellRenderer(new PlayerCellRenderer());
 
         leaveLobbyButton = new MenuButton("Leave lobby");
@@ -76,6 +75,7 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
         try {
             hostSocket.getOutputStream().write(255);
             hostSocket.close();
+            hostSocket = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -111,6 +111,13 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
                     } else if(byt == 1) {
                         names.removeElement(nextName);
                         nextName = "";
+                    } else if(byt == 2) {
+                        //leave
+                        names.clear();
+                        monitoring = false;
+                        hostSocket.close();
+                        hostSocket = null;
+                        parent.switchPanels(PanelType.JOIN_GAME);
                     } else {
                         nextName += (char)byt;
                     }
@@ -133,9 +140,21 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
     public void paintComponent(Graphics g) {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(Color.BLACK);
+        drawCenteredString(g, "Players", getWidth()/2, 25);
     }
 
     public Socket getHost() {
         return hostSocket;
+    }
+
+    private void drawCenteredString(Graphics g, String text, int xPos, int yPos) {
+        FontMetrics metrics = g.getFontMetrics(getFont());
+        
+        int x = xPos - metrics.stringWidth(text) / 2;
+        int y = yPos - metrics.getHeight() / 2 + metrics.getAscent();
+        
+        g.setFont(getFont());
+        g.drawString(text, x, y);
     }
 }

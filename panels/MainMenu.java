@@ -53,7 +53,7 @@ public class MainMenu extends JPanel implements ActionListener, DocumentListener
 
     @Override
     public void paintComponent(Graphics g) {
-        g.setColor(Color.RED);
+        g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.BLACK);
         g.drawString("Username:", getWidth() / 2 - 75, getHeight() / 2 - 75);
