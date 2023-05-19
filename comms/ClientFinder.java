@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 
 import javax.swing.DefaultListModel;
 
@@ -87,7 +90,27 @@ public class ClientFinder implements Runnable {
                 e.printStackTrace();
             }
             try {
-                socket.send(sendPacket);
+                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                while (interfaces.hasMoreElements()) {
+                    NetworkInterface networkInterface = interfaces.nextElement();
+
+                    if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                        continue; // don't broadcast to not working interfaces
+                    }
+
+                    for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                        InetAddress broadcast = interfaceAddress.getBroadcast();
+                        if (broadcast == null) {
+                            continue;
+                        }
+                        try {
+                            sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, port);
+                            socket.send(sendPacket);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+
 
                 // check for clients leaving
                 for (int i = 0; i < clientSockets.size(); i++) {
