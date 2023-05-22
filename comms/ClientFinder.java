@@ -31,7 +31,6 @@ public class ClientFinder implements Runnable {
     static {
         try {
             group = InetAddress.getByName("230.1.1.1");
-            networkInterface = NetworkInterface.getByName("eth2");
         } catch (IOException e) {
             e.printStackTrace();
         }
