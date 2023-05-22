@@ -19,6 +19,7 @@ public class MainMenu extends JPanel implements ActionListener, DocumentListener
 
     private JButton joinGameButton;
     private JButton hostGameButton;
+    private JButton instructionMenuButton;
 
     private JTextField nameField;
 
@@ -37,6 +38,10 @@ public class MainMenu extends JPanel implements ActionListener, DocumentListener
         hostGameButton.addActionListener(this);
         hostGameButton.setEnabled(false);
 
+        instructionMenuButton = new MenuButton("Instructions");
+        add(instructionMenuButton);
+        instructionMenuButton.addActionListener(this);
+
         nameField = new JTextField();
         add(nameField);
         nameField.getDocument().addDocumentListener(this);
@@ -44,8 +49,9 @@ public class MainMenu extends JPanel implements ActionListener, DocumentListener
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                joinGameButton.setBounds(getWidth() / 2 - 75, getHeight() / 2, 150, 50);
-                hostGameButton.setBounds(getWidth() / 2 - 75, getHeight() / 2 + 100, 150, 50);
+                joinGameButton.setBounds(getWidth() / 2 - 75, getHeight() / 2 + 75, 150, 50);
+                hostGameButton.setBounds(getWidth() / 2 - 75, getHeight() / 2 + 150, 150, 50);
+                instructionMenuButton.setBounds(getWidth() / 2 - 75, getHeight() / 2, 150, 50);
                 nameField.setBounds(getWidth() / 2 - 75, getHeight() / 2 - 50, 150, 25);
             }
         });
@@ -67,6 +73,8 @@ public class MainMenu extends JPanel implements ActionListener, DocumentListener
         } else if (e.getSource() == hostGameButton) {
             parent.setName(nameField.getText());
             parent.switchPanels(PanelType.HOST_GAME);
+        } else if (e.getSource() == instructionMenuButton) {
+            parent.switchPanels(PanelType.INSTRUCTION_MENU);
         }
     }
 

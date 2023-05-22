@@ -16,6 +16,7 @@ public class Screen extends JFrame implements Runnable{
     private HostGameMenu hostGameMenu;
     private LobbyMenu lobbyMenu;
     private GamePanel gamePanel;
+    private InstructionsPanel instructionMenu;
     private String username;
     private boolean debugMode;
 
@@ -39,9 +40,12 @@ public class Screen extends JFrame implements Runnable{
 
         gamePanel = new GamePanel(this);
         add(gamePanel);
+
+        instructionMenu = new InstructionsPanel(this);
+        add(instructionMenu);
         
         activePanel = mainMenu;
-        panels = new JPanel[]{mainMenu, joinGameMenu, hostGameMenu, lobbyMenu};
+        panels = new JPanel[]{mainMenu, joinGameMenu, hostGameMenu, lobbyMenu,instructionMenu};
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -104,7 +108,6 @@ public class Screen extends JFrame implements Runnable{
             }
             case GAME_LOBBY -> {
                 activePanel = lobbyMenu;
-                lobbyMenu.setBounds(0, 0, getWidth(), getHeight());
                 lobbyMenu.joinHost(joinGameMenu.selectedHost());
             }
             case PLAYING_GAME -> {
@@ -115,6 +118,10 @@ public class Screen extends JFrame implements Runnable{
                 }
                 activePanel = gamePanel;
             }
+            case INSTRUCTION_MENU -> {
+                activePanel = instructionMenu;
+            }
+            default -> throw new IllegalArgumentException("Unexpected value: " + panelType);
         }
 
         for(JPanel panel : panels) {
