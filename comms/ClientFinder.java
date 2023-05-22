@@ -4,20 +4,19 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
 
 import javax.swing.DefaultListModel;
 
 public class ClientFinder implements Runnable {
     public static InetAddress group;
     public static int port = 4000;
+    public static NetworkInterface networkInterface;
     private DatagramSocket socket;
     private ServerSocket serverSocket;
     private byte[] sendData;
@@ -32,6 +31,7 @@ public class ClientFinder implements Runnable {
     static {
         try {
             group = InetAddress.getByName("230.1.1.1");
+            networkInterface = NetworkInterface.getByName("wlan1");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,13 +41,13 @@ public class ClientFinder implements Runnable {
         try {
 
             socket = new DatagramSocket();
-            socket.setBroadcast(true);
 
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(1000);
 
             sendData = (HostFinder.hostingMessage + "_" + hostName + "_" + InetAddress.getLocalHost().getHostAddress()
                     + "_" + serverSocket.getLocalPort()).getBytes(StandardCharsets.UTF_8);
+            
             sendPacket = new DatagramPacket(sendData, sendData.length, group, port);
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,27 +90,7 @@ public class ClientFinder implements Runnable {
                 e.printStackTrace();
             }
             try {
-                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                while (interfaces.hasMoreElements()) {
-                    NetworkInterface networkInterface = interfaces.nextElement();
-
-                    if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                        continue; // don't broadcast to not working interfaces
-                    }
-
-                    for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                        InetAddress broadcast = interfaceAddress.getBroadcast();
-                        if (broadcast == null) {
-                            continue;
-                        }
-                        try {
-                            sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, port);
-                            socket.send(sendPacket);
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-
+                socket.send(sendPacket);
 
                 // check for clients leaving
                 for (int i = 0; i < clientSockets.size(); i++) {

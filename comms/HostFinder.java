@@ -30,7 +30,7 @@ public class HostFinder implements Runnable {
             recievePacket = new DatagramPacket(receiveData, receiveData.length);
 
             socket = new MulticastSocket(ClientFinder.port);
-            socket.joinGroup(new InetSocketAddress(ClientFinder.group, ClientFinder.port), null);
+            socket.joinGroup(new InetSocketAddress(ClientFinder.group, ClientFinder.port), ClientFinder.networkInterface);
             socket.setSoTimeout(1000);
         } catch (IOException e) {
             e.printStackTrace();
