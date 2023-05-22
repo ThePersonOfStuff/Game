@@ -26,7 +26,6 @@ public abstract class Item implements Serializable, Collidable {
         images = new HashMap<>();
         try {
             images.put("sword", ImageIO.read(new File("game/Images/Sword.png")));
-            images.put("player", ImageIO.read(new File("game/Images/Player.png")));
             images.put("knives", ImageIO.read(new File("game/Images/Knives.png")));
             images.put("halberd", ImageIO.read(new File("game/Images/Halberd.png")));
         } catch (IOException e) {

@@ -2,13 +2,18 @@ package game;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
 public class Player implements Collidable {
+    private static BufferedImage[] playerImages;
     private int id;
     private double xPos;
     private double yPos;
@@ -24,6 +29,18 @@ public class Player implements Collidable {
     private HashMap<String, Integer> framesSinceLastKeysPressed;
     private int levelId;
     private boolean hasCollected = false;
+    private boolean facingRight = false;
+
+    static {
+        playerImages = new BufferedImage[5];
+        try {
+            for (int i = 0; i < playerImages.length; i++) {
+                playerImages[i] = ImageIO.read(new File("game/Images/player" + i + ".png"));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public Player(int id, double x, double y) {
         this.id = id;
@@ -71,7 +88,13 @@ public class Player implements Collidable {
         for (int i = offset; i <= data.length - 18; i += 18) {
             if (data[i] == id) {
                 levelId = data[i + 1];
-                xPos = toDouble(data, i + 2);
+                double newXPos = toDouble(data, i + 2);
+                if (newXPos > xPos) {
+                    facingRight = true;
+                } else if (newXPos < xPos) {
+                    facingRight = false;
+                }
+                xPos = newXPos;
                 yPos = toDouble(data, i + 10);
             }
         }
@@ -110,8 +133,17 @@ public class Player implements Collidable {
     }
 
     public void draw(Graphics g, int x, int y) {
-        g.drawImage(Item.images.get("player"), (int) (x - Item.images.get("player").getWidth() / 2),
-                (int) (y - Item.images.get("player").getHeight() / 2), null);
+        if (facingRight) {
+            g.drawImage(playerImages[id % playerImages.length],
+                    (int) (x + playerImages[id % playerImages.length].getWidth() / 2),
+                    (int) (y - playerImages[id % playerImages.length].getHeight() / 2), -(int) width, (int) height,
+                    null);
+        } else {
+            g.drawImage(playerImages[id % playerImages.length],
+                    (int) (x - playerImages[id % playerImages.length].getWidth() / 2),
+                    (int) (y - playerImages[id % playerImages.length].getHeight() / 2), (int) width, (int) height,
+                    null);
+        }
         drawCenteredString(g, name, x, y - (int) width / 2 - 10);
     }
 
@@ -137,6 +169,7 @@ public class Player implements Collidable {
     }
 
     public void move(Level level, HashMap<String, Boolean> keysPressed) {
+        double oldXPos = xPos;
         byte collisions = level.collisions(this);
 
         framesSinceLastTouchedGround++;
@@ -240,6 +273,12 @@ public class Player implements Collidable {
 
         for (String key : keysPressed.keySet()) {
             framesSinceLastKeysPressed.put(key, framesSinceLastKeysPressed.getOrDefault(key, 100) + 1);
+        }
+
+        if(xPos > oldXPos) {
+            facingRight = true;
+        } else if(xPos < oldXPos) {
+            facingRight = false;
         }
     }
 
