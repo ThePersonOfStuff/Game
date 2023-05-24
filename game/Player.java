@@ -51,7 +51,7 @@ public class Player implements Collidable {
 
     public Player(byte[] initBytes) {
         if (initBytes.length != 18) {
-            throw new IllegalArgumentException("Player initialization byte array not correct size");
+            throw new IllegalArgumentException("Player initialization byte array not correct size (18)");
         }
         id = initBytes[0];
         levelId = initBytes[1];
