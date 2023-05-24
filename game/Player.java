@@ -275,9 +275,9 @@ public class Player implements Collidable {
             framesSinceLastKeysPressed.put(key, framesSinceLastKeysPressed.getOrDefault(key, 100) + 1);
         }
 
-        if(xPos > oldXPos) {
+        if (xPos > oldXPos) {
             facingRight = true;
-        } else if(xPos < oldXPos) {
+        } else if (xPos < oldXPos) {
             facingRight = false;
         }
     }
