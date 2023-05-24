@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
@@ -30,7 +32,16 @@ public class HostFinder implements Runnable {
             recievePacket = new DatagramPacket(receiveData, receiveData.length);
 
             socket = new MulticastSocket(ClientFinder.port);
-            socket.joinGroup(new InetSocketAddress(ClientFinder.group, ClientFinder.port), ClientFinder.networkInterface);
+
+            Enumeration<NetworkInterface> netInts = NetworkInterface.getNetworkInterfaces();
+            while(netInts.hasMoreElements()) {
+                try {
+                    NetworkInterface n = netInts.nextElement();
+                    socket.joinGroup(new InetSocketAddress(ClientFinder.group, ClientFinder.port), n);
+                    System.out.println(n);
+                } catch (Exception e) {}
+            }
+            
             socket.setSoTimeout(1000);
         } catch (IOException e) {
             e.printStackTrace();

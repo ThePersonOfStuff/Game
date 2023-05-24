@@ -51,7 +51,7 @@ public class Player implements Collidable {
 
     public Player(byte[] initBytes) {
         if (initBytes.length != 18) {
-            throw new IllegalArgumentException("Player initialization byte array not correct size (18)");
+            throw new IllegalArgumentException("Player initialization byte array not correct size");
         }
         id = initBytes[0];
         levelId = initBytes[1];
@@ -275,9 +275,9 @@ public class Player implements Collidable {
             framesSinceLastKeysPressed.put(key, framesSinceLastKeysPressed.getOrDefault(key, 100) + 1);
         }
 
-        if (xPos > oldXPos) {
+        if(xPos > oldXPos) {
             facingRight = true;
-        } else if (xPos < oldXPos) {
+        } else if(xPos < oldXPos) {
             facingRight = false;
         }
     }
