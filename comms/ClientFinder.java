@@ -71,6 +71,7 @@ public class ClientFinder implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("ran");
         if (selfClient == null || selfSocket == null) {
             try {
                 selfSocket = new Socket();
