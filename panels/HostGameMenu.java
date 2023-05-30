@@ -81,16 +81,17 @@ public class HostGameMenu extends JPanel implements ActionListener {
             Thread gameHosterThread = new Thread(new GameHoster(clientFinder.clientList()));
             gameHosterThread.start();
 
+            
             //read own 255 message first
             try {
                 int byt = clientFinder.selfSocket().getInputStream().read();
                 if(byt != 255) {
-                    System.exit(1);
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("Expected 255 'start game', instead got " + byt + ".");
                 }
             } catch (IOException e2) {
                 e2.printStackTrace();
             }
+
             parent.switchPanels(PanelType.PLAYING_GAME);
         } else if (e.getSource() == returnToMenuButton) {
             exitClientSearch();

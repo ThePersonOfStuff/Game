@@ -63,6 +63,9 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
             hostSocket.getOutputStream().write(parent.getName().getBytes(StandardCharsets.UTF_8));
             hostSocket.getOutputStream().write(0);
 
+            //get own name, put it first
+            names.addElement(parent.getName());
+
             nameMonitor = new Thread(this);
             nameMonitor.start();
         } catch (IOException e) {
@@ -71,6 +74,8 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
     }
 
     public void leaveLobby() {
+        //clear list of names
+        names.clear();
         //send the host 255 to indicate leaving and stop the monitor thread
         monitoring = false;
         try {
@@ -101,6 +106,7 @@ public class LobbyMenu extends JPanel implements Runnable, ActionListener{
             try {
                 while(hostSocket.getInputStream().available() > 0) {
                     int byt = hostSocket.getInputStream().read();
+                    System.out.println(nextName);
                     if(byt == 255) {
                         //its gaming time
                         parent.switchPanels(PanelType.PLAYING_GAME);

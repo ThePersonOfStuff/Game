@@ -98,7 +98,9 @@ public class ClientFinder implements Runnable {
                         int byt = clientSockets.get(i).inputStream().read();
                         if (byt == 255) {
                             clientSockets.get(i).leave();
+                            clientSockets.remove(i);
                         } else {
+                            i--;
                             System.out.println("?????");
                         }
                     }
@@ -107,8 +109,8 @@ public class ClientFinder implements Runnable {
 
                 System.out.println("CLIENT FOUND");
                 ClientData client = new ClientData(acceptedSocket);
+                client.sendNames(clientSockets, selfClient);
                 clientSockets.addElement(client);
-                client.sendNames(clientSockets);
 
             } catch (SocketTimeoutException e) {
                 System.out.println("No clients found");

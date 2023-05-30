@@ -23,20 +23,20 @@ public class ClientData {
             clientName = "";
 
             boolean nameFound = false;
-            while(!nameFound) {
+            while (!nameFound) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     System.out.println("Waiting for name");
                 }
 
-                while(inputStream.available() > 0) {
+                while (inputStream.available() > 0) {
                     int byt = inputStream.read();
-                    if(byt == 0) {
+                    if (byt == 0) {
                         nameFound = true;
                         break;
                     } else {
-                        clientName += (char)byt;
+                        clientName += (char) byt;
                     }
                 }
             }
@@ -75,10 +75,10 @@ public class ClientData {
 
     @Override
     public boolean equals(Object other) {
-        if(!(other instanceof ClientData)) {
+        if (!(other instanceof ClientData)) {
             return false;
         }
-        ClientData otherClient = (ClientData)other;
+        ClientData otherClient = (ClientData) other;
         return socket.equals(otherClient.socket()) && clientName.equals(otherClient.name());
     }
 
@@ -86,14 +86,26 @@ public class ClientData {
         clientName = n;
     }
 
-    public void sendNames(DefaultListModel<ClientData> otherClients) {
-        for(int i = 0; i < otherClients.size(); i++) {
+    public void sendNames(DefaultListModel<ClientData> otherClients, ClientData clientNotToSendTo) {
+        for (int i = 0; i < otherClients.size(); i++) {
             String clientName = otherClients.get(i).name();
+
+            // send the other clients to this client
             try {
                 outputStream.write(clientName.getBytes(StandardCharsets.UTF_8));
                 outputStream.write(0);
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+
+            // send this client to the other clients
+            if (!otherClients.get(i).equals(clientNotToSendTo)) {
+                try {
+                    otherClients.get(i).outputStream().write(this.clientName.getBytes(StandardCharsets.UTF_8));
+                    otherClients.get(i).outputStream().write(0);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
